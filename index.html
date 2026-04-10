@@ -544,7 +544,7 @@
       };
 
       const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app, "spectrum-ee503");
+      const db = getFirestore(app);
       const auth = getAuth(app);
 
       let currentUser = null;
