@@ -6,8 +6,6 @@
     <title>Game Creation Engine | Platform Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="config.js"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 
     <script>
@@ -35,12 +33,9 @@
       };
     </script>
     <style>
-      /* Base and Emscripten overrides */
       body { background-color: #05070a; color: #e0e6ed; overflow-x: hidden; }
       canvas.emscripten { border: 0px none; background-color: black; outline: none; image-rendering: pixelated; width: 100%; height: 100%; display: block; }
       #shader-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -50; pointer-events: auto; }
-      
-      /* UI Animations */
       .tilt-card { transition: transform 0.1s ease-out; transform-style: preserve-3d; will-change: transform; }
       .tilt-content { transform: translateZ(40px); }
       .btn-game { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; }
@@ -50,8 +45,6 @@
       .btn-game:active { transform: translateY(1px) scale(0.98); }
       .spinner { height: 24px; width: 24px; display: inline-block; animation: rotation 0.8s linear infinite; border: 3px solid #1f2937; border-top: 3px solid #00e5ff; border-radius: 100%; }
       @keyframes rotation { to { transform: rotate(360deg); } }
-      
-      /* Utilities */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
       .circle-bg { fill: none; stroke: #1f2937; stroke-width: 8; }
@@ -302,7 +295,6 @@
     </div>
 
     <script type="text/javascript">
-      // Background Particle Animation System
       let neuralRafId = null;
       function initBackgroundShader() {
         const canvas = document.getElementById("shader-bg");
@@ -356,7 +348,6 @@
         init(); animate();
       }
 
-      // Boot Sequence (Visuals + Emscripten Initialization)
       async function runBootSequence() {
         const bootText = document.getElementById("boot-percentage"); const bootCircle = document.getElementById("boot-circle");
         const hintText = document.getElementById("boot-hint"); const bootLoader = document.getElementById("boot-loader");
@@ -373,14 +364,12 @@
         await new Promise((r) => setTimeout(r, 600)); bootLoader.style.opacity = "0";
         setTimeout(() => {
           bootLoader.style.display = "none"; document.body.style.overflow = "auto"; initBackgroundShader();
-          // Lazily load the generated Emscripten JS to avoid stalling the DOM
           const script = document.createElement("script"); script.src = "index.js"; script.async = true; document.body.appendChild(script);
         }, 700);
       }
 
       if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", runBootSequence); } else { runBootSequence(); }
 
-      // 3D Card Hover Effects
       document.querySelectorAll(".tilt-card").forEach((card) => {
         card.addEventListener("mousemove", (e) => {
           const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
@@ -389,19 +378,15 @@
         card.addEventListener("mouseleave", () => { card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`; });
       });
 
-      // Suppress annoying Emscripten loop warnings
       const originalConsoleError = console.error;
       console.error = function (...args) { if (typeof args[0] === "string" && args[0].includes("emscripten_set_main_loop_timing")) return; originalConsoleError.apply(console, args); };
 
-      // Emscripten Binding Object
       var canvasElement = document.getElementById("canvas");
       var Module = { canvas: canvasElement, keyboardListeningElement: canvasElement };
 
-      // Fetch GROQ key securely
-      let GROQ_API_KEY = typeof CONFIG !== 'undefined' && CONFIG.GROQ_API_KEY ? CONFIG.GROQ_API_KEY : (localStorage.getItem("groq_api_key") || ""); 
+      let GROQ_API_KEY = localStorage.getItem("groq_api_key") || ""; 
       let pendingGeneratedJson = "";
 
-      // BUG FIX: Prevent Emscripten from hijacking standard browser inputs
       ["keydown", "keyup", "keypress"].forEach((eventType) => {
         window.addEventListener(eventType, (e) => {
           const el = document.activeElement;
@@ -414,12 +399,10 @@
         }, true);
       });
 
-      // Prevent canvas from scrolling the page
       document.addEventListener("keydown", (e) => { if (document.activeElement && document.activeElement.id === "canvas") { if (e.key === "Backspace" || e.key === "Tab" || e.key === " ") e.preventDefault(); } });
 
       function restartGame() {
         document.getElementById("game-over-overlay").classList.add("hidden"); document.getElementById("victory-overlay").classList.add("hidden");
-        // Re-inject the current payload to reset C++ state
         if (pendingGeneratedJson) { Module.ccall("LoadDynamicConfig", "void", ["string"], [pendingGeneratedJson]); }
         Module.resumeMainLoop(); setTimeout(() => document.getElementById("canvas").focus(), 100);
       }
@@ -430,21 +413,22 @@
         });
         document.getElementById("view-" + viewName).classList.remove("hidden");
         
-        // Reparent the WebAssembly Canvas so it persists state across views
         const engineContainer = document.getElementById("shared-engine-container");
         if (viewName === "player") {
           engineContainer.classList.remove("hidden", "absolute");
           document.getElementById("player-canvas-slot").appendChild(engineContainer);
           setTimeout(() => document.getElementById("canvas").focus(), 100);
           if (typeof WEBAudio !== "undefined" && WEBAudio.audioContext.state === "suspended") { WEBAudio.audioContext.resume(); }
+          
+          try { Module.ccall("SetAudioState", "void", ["number"], [1]); } catch(e){}
         } else {
-          engineContainer.classList.add("hidden", "absolute"); document.body.appendChild(engineContainer);
+          engineContainer.classList.add("hidden", "absolute"); 
+          document.body.appendChild(engineContainer);
+          
+          try { Module.ccall("SetAudioState", "void", ["number"], [0]); } catch(e){}
         }
       }
 
-      // ==========================================
-      // GROQ LLM INTEGRATION (Payload Generation)
-      // ==========================================
       const SYSTEM_PROMPT = `You are a JSON generator for a C++ WebAssembly Campaign Engine.
         Your ONLY job is to output a valid JSON object. Do not include markdown formatting.
         CRITICAL RULE 1: You MUST use exactly one of these predefined game_mode strings: quiz_mcq, endless_runner, algo_arena, typing_defense, memory_match, tug_of_war, rhythm_catch, flappy_heli, bullet_hell, breakout_pong, precision_jump.
@@ -514,7 +498,6 @@
             return; 
         }
         
-        // --- SECURITY GATE: Force auth before engine handoff ---
         const emailBtn = document.getElementById("auth-email-btn");
         if (!emailBtn.classList.contains("hidden")) {
             window.showEmailAuth();
@@ -522,7 +505,6 @@
         }
 
         navigateTo("player"); 
-        // Pass the JSON payload into the compiled C++ Memory Space
         Module.ccall("LoadDynamicConfig", "void", ["string"], [pendingGeneratedJson]);
       }
     </script>
@@ -532,9 +514,8 @@
       import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
       import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-      // Load Firebase config securely from config.js
-      const firebaseConfig = typeof CONFIG !== 'undefined' && CONFIG.FIREBASE ? CONFIG.FIREBASE : {
-        apiKey: "AIzaSyCUt5Yj5fUO03y90n_CiZ1OPf720zrhPJ8",
+      const firebaseConfig = {
+        apiKey: "AIzaSyCUt5Yj5fU003y9On_CiZ1OPf720zrhPJ8",
         authDomain: "spectrum-ee503.firebaseapp.com",
         projectId: "spectrum-ee503",
         storageBucket: "spectrum-ee503.firebasestorage.app",
@@ -544,13 +525,13 @@
       };
 
       const app = initializeApp(firebaseConfig);
+      // FIXED DB CONNECTION ROUTING HERE
       const db = getFirestore(app);
       const auth = getAuth(app);
 
       let currentUser = null;
       window.activeCloudGameId = null;
 
-      // --- GLOBAL AUTHENTICATION LISTENER ---
       onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const nameLabel = document.getElementById("auth-user-name");
@@ -572,13 +553,11 @@
             logoutBtn.classList.add("hidden");
         }
         
-        // Refresh DB data if on the correct view
         if(document.getElementById("view-leaderboard-list").classList.contains("hidden") === false) {
             window.fetchCloudGamesList();
         }
       });
 
-      // --- SECURE EMAIL AUTHENTICATION ---
       window.showEmailAuth = () => { 
           document.getElementById("guest-auth-modal").classList.add("hidden");
           document.getElementById("email-auth-modal").classList.remove("hidden"); 
@@ -614,7 +593,6 @@
           } catch (error) { console.error("Login Error", error); alert("Login failed: " + error.message); }
       };
 
-      // --- SYNTHETIC GUEST AUTHENTICATION (Password Protected) ---
       window.signInGuest = () => { 
           document.getElementById("email-auth-modal").classList.add("hidden");
           document.getElementById("guest-auth-modal").classList.remove("hidden"); 
@@ -634,7 +612,6 @@
               return false; 
           }
           
-          // Generate a synthetic email to bind the ID and Password to the backend
           const syntheticEmail = `${rawId.toLowerCase()}@guest.spectrum.local`;
           
           try {
@@ -657,15 +634,11 @@
           }
       };
 
-      // --- LOGOUT ROUTINE ---
       window.signOutUser = async () => {
           try { await signOut(auth); } 
           catch (error) { console.error("Logout Failed", error); }
       };
 
-      // --- FIREBASE CLOUD DATABASE (CRUD OPERATIONS) ---
-      
-      // Publish Payload
       window.saveCurrentGame = async function() {
         if (!currentUser) {
             alert("You must login or access as a guest to publish to the global cloud.");
@@ -693,7 +666,6 @@
         } catch (e) { console.error("Error adding document: ", e); }
       };
 
-      // Fetch Games Grid
       window.fetchCloudGamesList = async function() {
         const listContainer = document.querySelector("#view-leaderboard-list .grid"); 
         if(!listContainer) return;
@@ -708,7 +680,6 @@
             const data = docItem.data();
             const encodedPayload = encodeURIComponent(data.payload); 
             
-            // Allow deletion only if current user owns the payload
             let deleteBtnHtml = "";
             if (currentUser && currentUser.uid === data.ownerId) {
                 deleteBtnHtml = `<button onclick="event.stopPropagation(); window.deleteCloudGame('${docItem.id}')" class="mt-2 text-xs font-mono text-accent-pink border border-accent-pink/30 rounded px-3 py-1 hover:bg-accent-pink/10 w-fit uppercase tracking-widest">[ DELETE ]</button>`;
@@ -729,7 +700,6 @@
         } catch (e) { console.error("Error fetching games: ", e); }
       };
 
-      // Delete Payload
       window.deleteCloudGame = async function(docId) {
           if(!confirm("Initiate purge sequence? This cannot be undone.")) return;
           try {
@@ -738,12 +708,10 @@
           } catch (e) { console.error("Purge failed: ", e); alert("Permission denied or network error.");}
       };
 
-      // Load Cloud JSON to Engine
       window.loadCloudGame = function(gameId, payloadString) {
           window.activeCloudGameId = gameId; pendingGeneratedJson = payloadString; deployApprovedJson();
       };
 
-      // Post Match Telemetry to Cloud (Called via Emscripten C++ Handoff)
       window.submitScoreToCloud = async function(finalScore) {
           if (!window.activeCloudGameId) return; 
           const playerName = currentUser ? currentUser.displayName : "Unknown_Operative";
@@ -752,7 +720,6 @@
           } catch (e) { console.error("Error securing score: ", e); }
       };
 
-      // Real-Time Leaderboard Rendering
       window.openLeaderboard = async function(gameId, gameName) {
           document.getElementById("leaderboard-game-title").innerText = gameName.toUpperCase();
           navigateTo('leaderboard'); 
@@ -780,7 +747,6 @@
           } catch (e) { console.error("Error loading leaderboard: ", e); }
       };
 
-      // Init Load
       document.addEventListener("DOMContentLoaded", () => { setTimeout(window.fetchCloudGamesList, 1500); });
     </script>
   </body>
