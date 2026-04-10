@@ -20,12 +20,11 @@ using namespace std;
 // ==========================================
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-// Dispatches a DOM event to show the Game Over overlay and submits metrics.
 EM_JS(void, triggerGameOverUI, (int finalScore), { 
     document.getElementById('game-over-overlay').classList.remove('hidden'); 
     document.getElementById('final-score-text').innerText = "Metrics: " + finalScore; 
+    window.submitScoreToCloud(finalScore); 
 });
-// Dispatches a DOM event for Victory and pushes scores to Firebase.
 EM_JS(void, triggerVictoryUI, (int finalScore), { 
     document.getElementById('victory-overlay').classList.remove('hidden'); 
     document.getElementById('victory-score-text').innerText = "Metrics: " + finalScore; 
@@ -36,12 +35,8 @@ void triggerGameOverUI(int score) { cout << "GAME OVER!\n"; }
 void triggerVictoryUI(int score) { cout << "VICTORY!\n"; }
 #endif
 
-// Global pointer needed for Emscripten's C-style callback limitations
 GameContext* globalCtx = nullptr;
 
-// ==========================================
-// JSON PARSING UTILITIES
-// ==========================================
 float getF(json& j, const string& k, float d) {
     if(!j.contains(k)) return d;
     if(j[k].is_number()) return j[k].get<float>();
@@ -56,11 +51,6 @@ int getI(json& j, const string& k, int d) {
     return d;
 }
 
-// ==========================================
-// LEVEL LOADING & STATE INITIALIZATION
-// ==========================================
-
-/// @brief Clears entities and reinitializes state based on the current level's JSON node.
 void LoadCurrentLevel(GameContext* ctx) {
     if (ctx->currentLevelIndex >= (int)ctx->levelsConfig.size()) return;
     json lvl = ctx->levelsConfig[ctx->currentLevelIndex];
@@ -124,48 +114,48 @@ void LoadCurrentLevel(GameContext* ctx) {
     }
 }
 
-/// @brief Exported function called via JS `ccall` to dynamically load an LLM payload.
 #ifdef __EMSCRIPTEN__
-extern "C" { EMSCRIPTEN_KEEPALIVE void LoadDynamicConfig(const char* jsonString) {
-#else
-void LoadDynamicConfig(const char* jsonString) {
-#endif
-    if (!globalCtx) return;
-    try {
-        json config = json::parse(jsonString);
-        if (config.contains("game_mode") && config["game_mode"].is_string()) globalCtx->gameMode = config["game_mode"].get<string>(); else globalCtx->gameMode = "unknown";
-        globalCtx->score = 0; 
-        
-        globalCtx->currentState = MENU; 
-        
-        globalCtx->levelsConfig.clear();
-        if (config.contains("levels") && config["levels"].is_array()) {
-            for (auto& l : config["levels"]) globalCtx->levelsConfig.push_back(l);
-        } else if (config.contains("questions") && config["questions"].is_array()) {
-            for (auto& q : config["questions"]) globalCtx->levelsConfig.push_back(q);
-        } else {
-            globalCtx->levelsConfig.push_back(config); 
-        }
-        
-        globalCtx->currentLevelIndex = 0;
-        globalCtx->levelAdvanceTimer = 0;
-        LoadCurrentLevel(globalCtx);
+extern "C" { 
+    EMSCRIPTEN_KEEPALIVE void LoadDynamicConfig(const char* jsonString) {
+        if (!globalCtx) return;
+        try {
+            json config = json::parse(jsonString);
+            if (config.contains("game_mode") && config["game_mode"].is_string()) globalCtx->gameMode = config["game_mode"].get<string>(); else globalCtx->gameMode = "unknown";
+            globalCtx->score = 0; 
+            
+            globalCtx->currentState = MENU; 
+            
+            globalCtx->levelsConfig.clear();
+            if (config.contains("levels") && config["levels"].is_array()) {
+                for (auto& l : config["levels"]) globalCtx->levelsConfig.push_back(l);
+            } else if (config.contains("questions") && config["questions"].is_array()) {
+                for (auto& q : config["questions"]) globalCtx->levelsConfig.push_back(q);
+            } else {
+                globalCtx->levelsConfig.push_back(config); 
+            }
+            
+            globalCtx->currentLevelIndex = 0;
+            globalCtx->levelAdvanceTimer = 0;
+            LoadCurrentLevel(globalCtx);
 
-    } catch (...) { cout << "JSON Parse Error: Invalid Schema\n"; }
-}
-#ifdef __EMSCRIPTEN__
+        } catch (...) { cout << "JSON Parse Error: Invalid Schema\n"; }
+    }
+
+    EMSCRIPTEN_KEEPALIVE void SetAudioState(int active) {
+        if (active == 0) {
+            Mix_PauseMusic();
+            Mix_Pause(-1); 
+        } else {
+            Mix_ResumeMusic();
+            Mix_Resume(-1);
+        }
+    }
 } 
 #endif
 
-// ==========================================
-// CORE EXECUTION LOOP
-// ==========================================
-
-/// @brief Primary tick function. Emscripten takes control of this loop in browser environments.
 void MainLoopStep(void* arg) {
     GameContext* ctx = (GameContext*)arg; 
     
-    // Fixed Timestep Calculation
     Uint32 now = SDL_GetTicks(); Uint32 frameTime = now - ctx->lastFrameTicks; ctx->lastFrameTicks = now;
     if (frameTime > 250) frameTime = 250; ctx->accumulator += frameTime;
 
@@ -179,7 +169,6 @@ void MainLoopStep(void* arg) {
 #endif
     }
 
-    // Logic Update (Locked at ~60Hz)
     while (ctx->accumulator >= 16) {
         if (ctx->levelAdvanceTimer > 0) {
             ctx->levelAdvanceTimer--;
@@ -191,7 +180,7 @@ void MainLoopStep(void* arg) {
             else if (ctx->gameMode == "algo_arena")     UpdateAlgoMode(ctx);
             else if (ctx->gameMode == "typing_defense") UpdateTypingMode(ctx);
             else if (ctx->gameMode == "memory_match")   UpdateMemoryMode(ctx);
-            else if (ctx->gameMode == "quiz_mcq")       ; // Wait for click
+            else if (ctx->gameMode == "quiz_mcq")       ; 
             else if (ctx->gameMode == "tug_of_war")     UpdateTugOfWarMode(ctx);
             else if (ctx->gameMode == "rhythm_catch")   UpdateRhythmMode(ctx);
             else if (ctx->gameMode == "flappy_heli")    UpdateFlappyMode(ctx);
@@ -202,13 +191,11 @@ void MainLoopStep(void* arg) {
         ctx->accumulator -= 16;
     }
 
-    // Telemetry Update
     ctx->frames++;
     if (now - ctx->lastTime >= 1000) {
         ctx->fps = ctx->frames; ctx->frames = 0; ctx->lastTime = now;
     }
 
-    // Rendering Dispatch
     if      (ctx->gameMode == "endless_runner") RenderRunnerMode(ctx);
     else if (ctx->gameMode == "algo_arena")     RenderAlgoMode(ctx);
     else if (ctx->gameMode == "typing_defense") RenderTypingMode(ctx);
@@ -228,47 +215,36 @@ void MainLoopStep(void* arg) {
     SDL_RenderPresent(ctx->renderer);
 }
 
-// ==========================================
-// ENTRY POINT
-// ==========================================
-
 int main() {
-    // Subsystem Initialization
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO); TTF_Init(); Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048); 
     SDL_Window* window = SDL_CreateWindow("WASM Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "0"); SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    // Initial State Setup
     GameContext ctx; ctx.renderer = renderer; ctx.currentState = MENU; ctx.gameIsRunning = true; 
     ctx.lastFrameTicks = SDL_GetTicks(); ctx.accumulator = 0; ctx.bgmStarted = false; globalCtx = &ctx;
 
-    // Font Loading
     ctx.fontArcade = TTF_OpenFont("assets/font_arcade.ttf", 24);
     ctx.fontQuiz = TTF_OpenFont("assets/font_quiz.ttf", 24);
     ctx.fontFps = TTF_OpenFont("assets/font_fps.ttf", 18);
     
-    // Safeties (Fallbacks)
     if (!ctx.fontArcade) ctx.fontArcade = TTF_OpenFont("assets/font.ttf", 24);
     if (!ctx.fontQuiz) ctx.fontQuiz = TTF_OpenFont("assets/font.ttf", 24);
     if (!ctx.fontFps) ctx.fontFps = TTF_OpenFont("assets/font.ttf", 18);
     
     ctx.showFps = true;
 
-    // Audio Loading (Prioritizes wav for browser compatibility)
     ctx.bgm = Mix_LoadMUS("assets/bgm.wav"); 
     if(!ctx.bgm) ctx.bgm = Mix_LoadMUS("assets/bgm.ogg");
     if(!ctx.bgm) ctx.bgm = Mix_LoadMUS("assets/bgm.mp3");
 
     ctx.sfxCorrect = Mix_LoadWAV("assets/correct.wav"); ctx.sfxWrong = Mix_LoadWAV("assets/wrong.wav"); ctx.sfxJump = Mix_LoadWAV("assets/jump.wav");
 
-    // Loop Handoff
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg(MainLoopStep, &ctx, 0, 1);
 #else
     while (ctx.gameIsRunning) { MainLoopStep(&ctx); SDL_Delay(16); }
 #endif
 
-    // Cleanup
     Mix_FreeMusic(ctx.bgm); Mix_FreeChunk(ctx.sfxCorrect); Mix_FreeChunk(ctx.sfxWrong); Mix_FreeChunk(ctx.sfxJump); Mix_CloseAudio();
     return 0;
 }
