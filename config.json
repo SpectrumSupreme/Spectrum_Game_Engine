@@ -1,0 +1,47 @@
+{
+    "player": {
+        "spawn_x": 100.0,
+        "spawn_y": 50.0,
+        "width": 20,
+        "height": 64,
+        "hp": 100,
+        "sprite": "./images/stick_figure1.png",
+        "frame_w": 110,
+        "frame_h": 162,
+        "max_frames": 1,
+        "anim_row": 0,
+        "has_gravity": true,
+        "weapon": "auto_rifle" 
+    },
+    "boss": {
+        "spawn_x": 600.0,
+        "spawn_y": 200.0,
+        "width": 100,
+        "height": 100,
+        "hp": 500,
+        "speed_x": -3.0,
+        "speed_y": 3.0,
+        "sprite": "./images/addition_boss.png",
+        "frame_w": 256,
+        "frame_h": 256,
+        "max_frames": 1,
+        "anim_row": 0,
+        "ai_movement": "bounce",
+        "phase2_skill": "earthquake"
+    },
+    "platform": {
+        "spawn_x": 0.0,
+        "spawn_y": 464.0,
+        "width": 800,
+        "height": 136,
+        "hp": 9999,
+        "sprite": "./images/platform.png",
+        "frame_w": 800,
+        "frame_h": 136,
+        "max_frames": 1,
+        "anim_row": 0
+    },
+    "background": {
+        "sprite": "./images/background.png"
+    }    
+}
