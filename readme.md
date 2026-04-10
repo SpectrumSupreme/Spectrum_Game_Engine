@@ -2,6 +2,7 @@
 
 **Developed by:** Dhiraj Adhikary and Samyak Anil Gaikwad  
 **Event:** TapTap Game Engine Hackathon 2026
+🚀 **[Click Here to Open the Engine Hub](https://spectrumsupreme.github.io/Spectrum_Game_Engine/)** 🚀
 
 ## Overview
 Spectrum Game Engine is a C++-based WebAssembly (WASM) game engine designed to run natively in the browser. Instead of hardcoding game logic, the engine's core architecture dynamically reconfigures itself at runtime using JSON payloads. It integrates a generative AI pipeline that allows users to type text prompts to generate fully playable games, which are then compiled on the fly without reloading the webpage.
