@@ -6,7 +6,10 @@
     <title>Game Creation Engine | Platform Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <script>
       tailwind.config = {
@@ -33,212 +36,737 @@
       };
     </script>
     <style>
-      body { background-color: #05070a; color: #e0e6ed; overflow-x: hidden; }
-      canvas.emscripten { border: 0px none; background-color: black; outline: none; image-rendering: pixelated; width: 100%; height: 100%; display: block; }
-      #shader-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -50; pointer-events: auto; }
-      .tilt-card { transition: transform 0.1s ease-out; transform-style: preserve-3d; will-change: transform; }
-      .tilt-content { transform: translateZ(40px); }
-      .btn-game { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1; }
-      .btn-game::after { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); transform: skewX(-25deg); transition: all 0.5s ease; z-index: -1; }
-      .btn-game:hover::after { left: 200%; }
-      .btn-game:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 0 20px currentColor; color: #fff; }
-      .btn-game:active { transform: translateY(1px) scale(0.98); }
-      .spinner { height: 24px; width: 24px; display: inline-block; animation: rotation 0.8s linear infinite; border: 3px solid #1f2937; border-top: 3px solid #00e5ff; border-radius: 100%; }
-      @keyframes rotation { to { transform: rotate(360deg); } }
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-      .circle-bg { fill: none; stroke: #1f2937; stroke-width: 8; }
-      .circle-fill { fill: none; stroke: url(#cyan-pink-grad); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.1s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
-      .fade-text { transition: opacity 0.8s ease-in-out; }
+      body {
+        background-color: #05070a;
+        color: #e0e6ed;
+        overflow-x: hidden;
+      }
+      canvas.emscripten {
+        border: 0px none;
+        background-color: black;
+        outline: none;
+        image-rendering: pixelated;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #shader-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -50;
+        pointer-events: auto;
+      }
+      .tilt-card {
+        transition: transform 0.1s ease-out;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .tilt-content {
+        transform: translateZ(40px);
+      }
+      .btn-game {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        z-index: 1;
+      }
+      .btn-game::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transform: skewX(-25deg);
+        transition: all 0.5s ease;
+        z-index: -1;
+      }
+      .btn-game:hover::after {
+        left: 200%;
+      }
+      .btn-game:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 0 20px currentColor;
+        color: #fff;
+      }
+      .btn-game:active {
+        transform: translateY(1px) scale(0.98);
+      }
+      .spinner {
+        height: 24px;
+        width: 24px;
+        display: inline-block;
+        animation: rotation 0.8s linear infinite;
+        border: 3px solid #1f2937;
+        border-top: 3px solid #00e5ff;
+        border-radius: 100%;
+      }
+      @keyframes rotation {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1f2937;
+        border-radius: 4px;
+      }
+      .circle-bg {
+        fill: none;
+        stroke: #1f2937;
+        stroke-width: 8;
+      }
+      .circle-fill {
+        fill: none;
+        stroke: url(#cyan-pink-grad);
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 0.1s linear;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      .fade-text {
+        transition: opacity 0.8s ease-in-out;
+      }
     </style>
   </head>
   <body class="font-sans">
     <canvas id="shader-bg"></canvas>
 
-    <div class="fixed top-0 right-0 p-4 z-50 flex items-center gap-4">
-        <span id="auth-user-name" class="font-mono text-sm text-accent-cyan hidden"></span>
-        <button id="auth-email-btn" onclick="window.showEmailAuth()" class="btn-game px-4 py-1.5 bg-bg-editor border border-border-dim text-text-muted hover:text-white text-xs font-mono font-bold rounded hover:border-accent-cyan transition-colors shadow-[0_0_10px_rgba(0,229,255,0.2)]">EMAIL LOGIN</button>
-        <button id="auth-guest-btn" onclick="window.signInGuest()" class="btn-game px-4 py-1.5 bg-bg-editor border border-border-dim text-text-muted hover:text-white text-xs font-mono font-bold rounded hover:border-accent-cyan transition-colors">GUEST ACCESS</button>
-        <button id="auth-logout-btn" onclick="window.signOutUser()" class="btn-game px-4 py-1.5 bg-bg-editor border border-border-dim text-text-muted text-xs font-mono font-bold rounded hover:border-accent-pink hover:text-accent-pink transition-colors hidden">LOGOUT</button>
-    </div>
-
-    <div id="email-auth-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center">
-        <div class="bg-bg-surface border border-border-dim p-8 rounded-xl w-96 flex flex-col gap-5 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
-            <h2 class="text-2xl font-display font-black text-white tracking-widest border-b border-border-dim pb-3">SECURE <span class="text-accent-cyan">LOGIN</span></h2>
-            <div class="flex flex-col gap-3 font-mono">
-                <input type="text" id="email-name-input" placeholder="Operative ID (For Signup Only)" class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors" />
-                <input type="email" id="email-input" placeholder="Email Address" class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors" />
-                <input type="password" id="password-input" placeholder="Password (Min 6 chars)" class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors" />
-            </div>
-            <div class="flex gap-3 mt-2">
-                <button onclick="window.loginWithEmail()" class="flex-1 btn-game py-3 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan font-bold font-display tracking-widest text-sm rounded hover:bg-accent-cyan hover:text-black transition-colors">LOGIN</button>
-                <button onclick="window.signUpWithEmail()" class="flex-1 btn-game py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple font-bold font-display tracking-widest text-sm rounded hover:bg-accent-purple hover:text-white transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]">SIGN UP</button>
-            </div>
-            <button onclick="window.closeEmailAuth()" class="text-text-muted hover:text-accent-pink text-xs font-mono uppercase tracking-widest text-center mt-2 transition-colors">Cancel Sequence</button>
+    <div
+      id="email-auth-modal"
+      class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center"
+    >
+      <div
+        class="bg-bg-surface border border-border-dim p-8 rounded-xl w-96 flex flex-col gap-5 shadow-[0_0_40px_rgba(0,229,255,0.15)]"
+      >
+        <h2
+          class="text-2xl font-display font-black text-white tracking-widest border-b border-border-dim pb-3"
+        >
+          SECURE <span class="text-accent-cyan">LOGIN</span>
+        </h2>
+        <div class="flex flex-col gap-3 font-mono">
+          <input
+            type="text"
+            id="email-name-input"
+            placeholder="Operative ID (For Signup Only)"
+            class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors"
+          />
+          <input
+            type="email"
+            id="email-input"
+            placeholder="Email Address"
+            class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors"
+          />
+          <input
+            type="password"
+            id="password-input"
+            placeholder="Password (Min 6 chars)"
+            class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors"
+          />
         </div>
-    </div>
-
-    <div id="guest-auth-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center">
-        <div class="bg-bg-surface border border-border-dim p-8 rounded-xl w-96 flex flex-col gap-5 shadow-[0_0_40px_rgba(0,229,255,0.15)]">
-            <h2 class="text-2xl font-display font-black text-white tracking-widest border-b border-border-dim pb-3">GUEST <span class="text-accent-cyan">UPLINK</span></h2>
-            <p class="text-xs font-mono text-text-muted">Enter a unique ID and passcode to save your progress. Passcode allows you to return to this operative ID later.</p>
-            <div class="flex flex-col gap-3 font-mono">
-                <input type="text" id="guest-id-input" placeholder="Operative ID (No spaces)" class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors" />
-                <input type="password" id="guest-password-input" placeholder="Passcode (Min 6 chars)" class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors" />
-            </div>
-            <button onclick="window.processGuestAuth()" class="btn-game py-3 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan font-bold font-display tracking-widest text-sm rounded hover:bg-accent-cyan hover:text-black transition-colors">AUTHENTICATE</button>
-            <button onclick="window.closeGuestAuth()" class="text-text-muted hover:text-accent-pink text-xs font-mono uppercase tracking-widest text-center mt-2 transition-colors">Cancel Sequence</button>
+        <div class="flex gap-3 mt-2">
+          <button
+            onclick="window.loginWithEmail()"
+            class="flex-1 btn-game py-3 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan font-bold font-display tracking-widest text-sm rounded hover:bg-accent-cyan hover:text-black transition-colors"
+          >
+            LOGIN
+          </button>
+          <button
+            onclick="window.signUpWithEmail()"
+            class="flex-1 btn-game py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple font-bold font-display tracking-widest text-sm rounded hover:bg-accent-purple hover:text-white transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]"
+          >
+            SIGN UP
+          </button>
         </div>
+        <button
+          onclick="window.closeEmailAuth()"
+          class="text-text-muted hover:text-accent-pink text-xs font-mono uppercase tracking-widest text-center mt-2 transition-colors"
+        >
+          Cancel Sequence
+        </button>
+      </div>
     </div>
 
-    <div id="boot-loader" class="fixed inset-0 z-50 bg-bg-base flex flex-col items-center justify-center transition-opacity duration-700">
-      <div class="flex flex-col items-center gap-8 w-full max-w-xl px-6 text-center">
+    <div
+      id="guest-auth-modal"
+      class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center"
+    >
+      <div
+        class="bg-bg-surface border border-border-dim p-8 rounded-xl w-96 flex flex-col gap-5 shadow-[0_0_40px_rgba(0,229,255,0.15)]"
+      >
+        <h2
+          class="text-2xl font-display font-black text-white tracking-widest border-b border-border-dim pb-3"
+        >
+          GUEST <span class="text-accent-cyan">UPLINK</span>
+        </h2>
+        <p class="text-xs font-mono text-text-muted">
+          Enter a unique ID and passcode to save your progress. Passcode allows
+          you to return to this operative ID later.
+        </p>
+        <div class="flex flex-col gap-3 font-mono">
+          <input
+            type="text"
+            id="guest-id-input"
+            placeholder="Operative ID (No spaces)"
+            class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors"
+          />
+          <input
+            type="password"
+            id="guest-password-input"
+            placeholder="Passcode (Min 6 chars)"
+            class="bg-bg-editor border border-border-dim rounded p-3 text-sm text-white focus:border-accent-cyan outline-none transition-colors"
+          />
+        </div>
+        <button
+          onclick="window.processGuestAuth()"
+          class="btn-game py-3 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan font-bold font-display tracking-widest text-sm rounded hover:bg-accent-cyan hover:text-black transition-colors"
+        >
+          AUTHENTICATE
+        </button>
+        <button
+          onclick="window.closeGuestAuth()"
+          class="text-text-muted hover:text-accent-pink text-xs font-mono uppercase tracking-widest text-center mt-2 transition-colors"
+        >
+          Cancel Sequence
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="boot-loader"
+      class="fixed inset-0 z-50 bg-bg-base flex flex-col items-center justify-center transition-opacity duration-700"
+    >
+      <div
+        class="flex flex-col items-center gap-8 w-full max-w-xl px-6 text-center"
+      >
         <div class="relative w-32 h-32 flex items-center justify-center">
-          <svg class="w-full h-full drop-shadow-[0_0_20px_rgba(255,0,85,0.4)]" viewBox="0 0 100 100">
+          <svg
+            class="w-full h-full drop-shadow-[0_0_20px_rgba(255,0,85,0.4)]"
+            viewBox="0 0 100 100"
+          >
             <defs>
-              <linearGradient id="cyan-pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="cyan-pink-grad"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stop-color="#00E5FF" />
                 <stop offset="100%" stop-color="#FF0055" />
               </linearGradient>
             </defs>
             <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
-            <circle id="boot-circle" class="circle-fill" cx="50" cy="50" r="45"></circle>
+            <circle
+              id="boot-circle"
+              class="circle-fill"
+              cx="50"
+              cy="50"
+              r="45"
+            ></circle>
           </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center font-display">
-            <span id="boot-percentage" class="text-2xl font-bold text-white tracking-widest">0%</span>
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center font-display"
+          >
+            <span
+              id="boot-percentage"
+              class="text-2xl font-bold text-white tracking-widest"
+              >0%</span
+            >
           </div>
         </div>
         <div class="h-24 flex flex-col items-center justify-center">
-          <span class="text-accent-pink font-mono text-xs uppercase tracking-widest mb-2 font-bold">> SYSTEM_HINT</span>
-          <p id="boot-hint" class="text-text-main font-sans text-xl font-medium fade-text opacity-0">Initializing neural architecture...</p>
+          <span
+            class="text-accent-pink font-mono text-xs uppercase tracking-widest mb-2 font-bold"
+            >> SYSTEM_HINT</span
+          >
+          <p
+            id="boot-hint"
+            class="text-text-main font-sans text-xl font-medium fade-text opacity-0"
+          >
+            Initializing neural architecture...
+          </p>
         </div>
       </div>
     </div>
 
-    <div id="view-hub" class="min-h-screen flex flex-col items-center justify-center relative p-6 z-10 overflow-hidden">
-      <div class="text-center mb-16 z-10 pointer-events-none">
-        <h1 class="text-6xl md:text-8xl font-black font-display tracking-tight mb-4 text-white drop-shadow-[0_0_30px_rgba(0,229,255,0.3)]">
-          SPECTRUM <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-pink">ENGINE</span>
+    <div
+      id="view-hub"
+      class="min-h-screen flex flex-col items-center justify-center relative p-6 z-10 overflow-hidden"
+    >
+      <div class="text-center mb-16 z-10">
+        <h1
+          class="text-6xl md:text-8xl font-black font-display tracking-tight mb-2 md:mb-4 text-white drop-shadow-[0_0_30px_rgba(0,229,255,0.3)]"
+        >
+          SPECTRUM
+          <span
+            class="text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-pink"
+            >ENGINE</span
+          >
         </h1>
+        <p
+          class="text-sm md:text-xl text-text-muted font-mono tracking-widest uppercase drop-shadow-lg"
+        >
+          Game Creation Matrix
+        </p>
+
+        <div class="flex items-center justify-center gap-4 mt-6 md:mt-8">
+          <span
+            id="auth-user-name"
+            class="font-mono text-sm font-bold tracking-widest text-accent-cyan hidden"
+          ></span>
+
+          <button
+            id="auth-email-btn"
+            onclick="window.showEmailAuth()"
+            class="px-5 py-2 bg-transparent border border-text-muted text-text-muted hover:border-white hover:text-white rounded text-xs font-mono font-bold tracking-widest transition-colors"
+          >
+            EMAIL LOGIN
+          </button>
+
+          <button
+            id="auth-guest-btn"
+            onclick="window.signInGuest()"
+            class="btn-game px-5 py-2 bg-accent-cyan/10 border border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-black rounded text-xs font-mono font-bold tracking-widest transition-colors shadow-[0_0_15px_rgba(0,229,255,0.3)]"
+          >
+            GUEST ACCESS
+          </button>
+
+          <button
+            id="auth-logout-btn"
+            onclick="window.signOutUser()"
+            class="btn-game px-5 py-2 bg-bg-editor border border-border-dim text-text-muted text-xs font-mono font-bold rounded hover:border-accent-pink hover:text-accent-pink transition-colors hidden"
+          >
+            LOGOUT
+          </button>
+        </div>
       </div>
 
-      <div class="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-6 z-10" style="perspective: 1200px">
-        <div onclick="navigateTo('creator')" class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-cyan relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-accent-cyan/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div
+        class="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-6 z-10"
+        style="perspective: 1200px"
+      >
+        <div
+          onclick="navigateTo('creator')"
+          class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-cyan relative overflow-hidden group"
+        >
+          <div
+            class="absolute inset-0 bg-gradient-to-br from-accent-cyan/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
           <div class="tilt-content flex flex-col h-full pointer-events-none">
-            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md">Creator Studio</h2>
-            <p class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base">Generate neural JSON payloads to reconfigure the C++ binary on the fly.</p>
-            <span class="text-sm font-mono font-bold uppercase text-accent-cyan drop-shadow-[0_0_10px_rgba(0,229,255,0.8)] flex items-center gap-2">Init Workspace</span>
+            <h2
+              class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md"
+            >
+              Creator Studio
+            </h2>
+            <p
+              class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base"
+            >
+              Generate neural JSON payloads to reconfigure the C++ binary on the
+              fly.
+            </p>
+            <span
+              class="text-sm font-mono font-bold uppercase text-accent-cyan drop-shadow-[0_0_10px_rgba(0,229,255,0.8)] flex items-center gap-2"
+              >Init Workspace</span
+            >
           </div>
         </div>
 
-        <div onclick="navigateTo('player')" class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-pink relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-accent-pink/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div
+          onclick="navigateTo('player')"
+          class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-pink relative overflow-hidden group"
+        >
+          <div
+            class="absolute inset-0 bg-gradient-to-br from-accent-pink/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
           <div class="tilt-content flex flex-col h-full pointer-events-none">
-            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md">Execution Deck</h2>
-            <p class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base">Test the compiled WebAssembly engine with native prebuilt environments.</p>
-            <span class="text-sm font-mono font-bold uppercase text-accent-pink drop-shadow-[0_0_10px_rgba(255,0,85,0.8)] flex items-center gap-2">Boot Engine</span>
+            <h2
+              class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md"
+            >
+              Execution Deck
+            </h2>
+            <p
+              class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base"
+            >
+              Test the compiled WebAssembly engine with native prebuilt
+              environments.
+            </p>
+            <span
+              class="text-sm font-mono font-bold uppercase text-accent-pink drop-shadow-[0_0_10px_rgba(255,0,85,0.8)] flex items-center gap-2"
+              >Boot Engine</span
+            >
           </div>
         </div>
 
-        <div onclick="navigateTo('leaderboard-list')" class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-purple relative overflow-hidden group">
-          <div class="absolute inset-0 bg-gradient-to-br from-accent-purple/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div
+          onclick="navigateTo('leaderboard-list')"
+          class="tilt-card bg-bg-surface/60 backdrop-blur-xl border border-border-dim rounded-xl p-8 flex flex-col cursor-pointer hover:border-accent-purple relative overflow-hidden group"
+        >
+          <div
+            class="absolute inset-0 bg-gradient-to-br from-accent-purple/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
           <div class="tilt-content flex flex-col h-full pointer-events-none">
-            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md">Rankings Matrix</h2>
-            <p class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base">Access global telemetry and high scores from the Firebase cloud.</p>
-            <span class="text-sm font-mono font-bold uppercase text-accent-purple drop-shadow-[0_0_10px_rgba(177,91,250,0.8)] flex items-center gap-2">View Database</span>
+            <h2
+              class="text-3xl lg:text-4xl font-display font-bold mb-3 text-white drop-shadow-md"
+            >
+              Rankings Matrix
+            </h2>
+            <p
+              class="text-text-muted mb-8 flex-grow font-semibold text-sm lg:text-base"
+            >
+              Access global telemetry and high scores from the Firebase cloud.
+            </p>
+            <span
+              class="text-sm font-mono font-bold uppercase text-accent-purple drop-shadow-[0_0_10px_rgba(177,91,250,0.8)] flex items-center gap-2"
+              >View Database</span
+            >
           </div>
         </div>
       </div>
     </div>
 
-    <div id="view-creator" class="hidden h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20">
-      <header class="h-14 shrink-0 border-b border-border-dim/50 px-6 flex items-center justify-between bg-bg-surface/80 z-20">
+    <div
+      id="view-creator"
+      class="hidden h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20"
+    >
+      <header
+        class="h-14 shrink-0 border-b border-border-dim/50 px-6 flex items-center justify-between bg-bg-surface/80 z-20"
+      >
         <div class="flex items-center gap-6">
-          <button onclick="navigateTo('hub')" class="btn-game text-accent-pink border border-accent-pink/50 hover:bg-accent-pink/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest">&larr; SYS.EXIT</button>
+          <button
+            onclick="navigateTo('hub')"
+            class="btn-game text-accent-pink border border-accent-pink/50 hover:bg-accent-pink/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest"
+          >
+            &larr; SYS.EXIT
+          </button>
           <div class="w-px h-6 bg-border-dim"></div>
-          <h1 class="text-base font-display font-bold text-white tracking-widest">SPECTRUM_ENGINE <span class="text-accent-cyan font-mono text-sm">/ builder</span></h1>
+          <h1
+            class="text-base font-display font-bold text-white tracking-widest"
+          >
+            SPECTRUM_ENGINE
+            <span class="text-accent-cyan font-mono text-sm">/ builder</span>
+          </h1>
         </div>
       </header>
 
       <main class="flex-grow flex w-full h-[calc(100vh-3.5rem)] mt-2">
-        <aside class="w-[30%] h-full border-r border-border-dim/50 flex flex-col bg-bg-surface/60 backdrop-blur-lg">
-          <div class="flex-grow overflow-y-auto p-4 space-y-4 font-mono text-sm" id="chat-feed">
-            <div class="text-xs text-accent-cyan border-b border-border-dim/50 pb-2 mb-4 drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]">> System initialized. Awaiting parameters.</div>
+        <aside
+          class="w-[30%] h-full border-r border-border-dim/50 flex flex-col bg-bg-surface/60 backdrop-blur-lg"
+        >
+          <div
+            class="flex-grow overflow-y-auto p-4 space-y-4 font-mono text-sm"
+            id="chat-feed"
+          >
+            <div
+              class="text-xs text-accent-cyan border-b border-border-dim/50 pb-2 mb-4 drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]"
+            >
+              > System initialized. Awaiting parameters.
+            </div>
           </div>
-          <div class="p-4 bg-bg-base/80 border-t border-border-dim/50 shrink-0 flex flex-col gap-3">
-            <input type="text" id="game-name-input" placeholder="Enter Simulation Name..." class="w-full bg-bg-editor border border-border-dim rounded-lg p-3 text-sm font-mono text-accent-cyan focus:border-accent-cyan focus:shadow-[0_0_15px_rgba(0,229,255,0.2)] focus:outline-none transition-all"/>
-            <textarea id="ai-prompt" class="w-full bg-bg-editor/80 border border-border-dim rounded-lg p-3 text-sm font-mono text-text-main focus:border-accent-cyan focus:shadow-[0_0_15px_rgba(0,229,255,0.2)] focus:outline-none resize-none transition-all" rows="3" placeholder="Define game architecture..."></textarea>
-            <button id="generate-btn" onclick="generateGameFromAI()" class="btn-game py-3 border border-accent-cyan text-accent-cyan bg-accent-cyan/10 text-xs font-display font-bold rounded w-full uppercase tracking-widest">Execute Sequence</button>
+          <div
+            class="p-4 bg-bg-base/80 border-t border-border-dim/50 shrink-0 flex flex-col gap-3"
+          >
+            <input
+              type="text"
+              id="game-name-input"
+              placeholder="Enter Simulation Name..."
+              class="w-full bg-bg-editor border border-border-dim rounded-lg p-3 text-sm font-mono text-accent-cyan focus:border-accent-cyan focus:shadow-[0_0_15px_rgba(0,229,255,0.2)] focus:outline-none transition-all"
+            />
+            <textarea
+              id="ai-prompt"
+              class="w-full bg-bg-editor/80 border border-border-dim rounded-lg p-3 text-sm font-mono text-text-main focus:border-accent-cyan focus:shadow-[0_0_15px_rgba(0,229,255,0.2)] focus:outline-none resize-none transition-all"
+              rows="3"
+              placeholder="Define game architecture..."
+            ></textarea>
+            <button
+              id="generate-btn"
+              onclick="generateGameFromAI()"
+              class="btn-game py-3 border border-accent-cyan text-accent-cyan bg-accent-cyan/10 text-xs font-display font-bold rounded w-full uppercase tracking-widest"
+            >
+              Execute Sequence
+            </button>
           </div>
         </aside>
 
         <section class="w-[70%] h-full flex flex-col p-6">
-          <div class="w-full h-full bg-bg-editor/70 backdrop-blur-xl border border-border-dim/50 rounded-xl overflow-hidden flex flex-col relative shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-            <div class="p-4 border-b border-border-dim/50 bg-bg-surface/50 flex justify-between items-center shrink-0">
-              <h3 class="font-mono font-bold text-white text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-accent-cyan animate-pulse"></span>config.json</h3>
+          <div
+            class="w-full h-full bg-bg-editor/70 backdrop-blur-xl border border-border-dim/50 rounded-xl overflow-hidden flex flex-col relative shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+          >
+            <div
+              class="p-4 border-b border-border-dim/50 bg-bg-surface/50 flex justify-between items-center shrink-0"
+            >
+              <h3
+                class="font-mono font-bold text-white text-sm flex items-center gap-2"
+              >
+                <span
+                  class="w-2 h-2 rounded-full bg-accent-cyan animate-pulse"
+                ></span
+                >config.json
+              </h3>
               <div class="flex gap-4">
-                <button onclick="window.saveCurrentGame()" class="btn-game text-accent-purple border border-accent-purple/30 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold transition-all">PUBLISH_TO_CLOUD</button>
-                <button onclick="deployApprovedJson()" class="btn-game px-6 py-1.5 bg-accent-pink text-white text-xs font-display font-bold rounded shadow-[0_0_15px_rgba(255,0,85,0.4)]">INJECT & RUN</button>
+                <button
+                  onclick="window.saveCurrentGame()"
+                  class="btn-game text-accent-purple border border-accent-purple/30 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold transition-all"
+                >
+                  PUBLISH_TO_CLOUD
+                </button>
+                <button
+                  onclick="deployApprovedJson()"
+                  class="btn-game px-6 py-1.5 bg-accent-pink text-white text-xs font-display font-bold rounded shadow-[0_0_15px_rgba(255,0,85,0.4)]"
+                >
+                  INJECT & RUN
+                </button>
               </div>
             </div>
-            <div class="flex-grow p-5 overflow-y-auto relative font-mono text-sm">
-              <div id="ai-loading-overlay" class="hidden absolute inset-0 bg-bg-editor/90 z-20 flex flex-col items-center justify-center backdrop-blur-md">
+            <div
+              class="flex-grow p-5 overflow-y-auto relative font-mono text-sm"
+            >
+              <div
+                id="ai-loading-overlay"
+                class="hidden absolute inset-0 bg-bg-editor/90 z-20 flex flex-col items-center justify-center backdrop-blur-md"
+              >
                 <div class="spinner mb-4 border-t-accent-cyan"></div>
-                <p class="text-accent-cyan font-bold tracking-widest animate-pulse">> Synthesizing Payload...</p>
+                <p
+                  class="text-accent-cyan font-bold tracking-widest animate-pulse"
+                >
+                  > Synthesizing Payload...
+                </p>
               </div>
-              <pre id="json-code-block" class="text-[#a5d6ff] whitespace-pre-wrap break-words"><code>// Waiting for generative payload...</code></pre>
+              <pre
+                id="json-code-block"
+                class="text-[#a5d6ff] whitespace-pre-wrap break-words"
+              ><code>// Waiting for generative payload...</code></pre>
             </div>
           </div>
         </section>
       </main>
     </div>
 
-    <div id="view-player" class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20">
-      <header class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg">
+    <div
+      id="view-player"
+      class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20"
+    >
+      <header
+        class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg"
+      >
         <div class="flex items-center gap-6">
-          <button onclick="navigateTo('hub')" class="btn-game text-accent-pink border border-accent-pink/50 hover:bg-accent-pink/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest">&larr; SYS.EXIT</button>
+          <button
+            onclick="navigateTo('hub')"
+            class="btn-game text-accent-pink border border-accent-pink/50 hover:bg-accent-pink/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest"
+          >
+            &larr; SYS.EXIT
+          </button>
           <div class="w-px h-6 bg-border-dim"></div>
-          <h1 class="text-xl font-display font-black tracking-widest text-white">EXECUTION <span class="text-accent-cyan">DECK</span></h1>
+          <h1
+            class="text-xl font-display font-black tracking-widest text-white"
+          >
+            EXECUTION <span class="text-accent-cyan">DECK</span>
+          </h1>
         </div>
         <div class="flex items-center gap-4">
-          <span class="flex items-center gap-2 text-xs font-mono text-text-muted"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>Network: Local</span>
+          <span
+            class="flex items-center gap-2 text-xs font-mono text-text-muted"
+            ><span
+              class="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+            ></span
+            >Network: Local</span
+          >
         </div>
       </header>
 
-      <main class="flex-grow max-w-[1800px] mx-auto w-full p-6 flex flex-col lg:flex-row gap-6">
+      <main
+        class="flex-grow max-w-[1800px] mx-auto w-full p-4 lg:p-6 flex flex-col lg:flex-row gap-6"
+      >
         <div class="w-full lg:w-[75%] flex flex-col gap-4">
-          <div id="player-canvas-slot" class="w-full aspect-video bg-black rounded-xl border border-border-dim/50 overflow-hidden relative shadow-[0_0_40px_rgba(0,229,255,0.15)] group">
-            
-            <div id="game-over-overlay" class="hidden absolute inset-0 bg-black/95 z-30 flex flex-col items-center justify-center backdrop-blur-md">
-              <h2 class="text-7xl font-display font-black text-accent-pink mb-2 tracking-widest drop-shadow-[0_0_20px_rgba(255,0,85,0.5)]">FATAL ERROR</h2>
-              <p id="final-score-text" class="text-2xl text-white font-mono mb-10">Metrics: 0</p>
+          <div
+            id="player-canvas-slot"
+            class="w-full aspect-video bg-black rounded-xl border border-border-dim/50 overflow-hidden relative shadow-[0_0_40px_rgba(0,229,255,0.15)] group"
+          >
+            <div
+              id="game-over-overlay"
+              class="hidden absolute inset-0 bg-black/95 z-30 flex flex-col items-center justify-center backdrop-blur-md"
+            >
+              <h2
+                class="text-7xl font-display font-black text-accent-pink mb-2 tracking-widest drop-shadow-[0_0_20px_rgba(255,0,85,0.5)]"
+              >
+                FATAL ERROR
+              </h2>
+              <p
+                id="final-score-text"
+                class="text-2xl text-white font-mono mb-10"
+              >
+                Metrics: 0
+              </p>
               <div class="flex gap-4">
-                <button onclick="restartGame()" class="btn-game px-8 py-3 border border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors">REBOOT SEQUENCE</button>
-                <button onclick="navigateTo('leaderboard-list')" class="btn-game px-8 py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]">VIEW RANKINGS</button>
+                <button
+                  onclick="restartGame()"
+                  class="btn-game px-8 py-3 border border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors"
+                >
+                  REBOOT SEQUENCE
+                </button>
+                <button
+                  onclick="navigateTo('leaderboard-list')"
+                  class="btn-game px-8 py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]"
+                >
+                  VIEW RANKINGS
+                </button>
               </div>
             </div>
 
-            <div id="victory-overlay" class="hidden absolute inset-0 bg-black/95 z-30 flex flex-col items-center justify-center backdrop-blur-md">
-              <h2 class="text-7xl font-display font-black text-accent-cyan mb-2 tracking-widest drop-shadow-[0_0_20px_rgba(0,229,255,0.5)]">TEST PASSED</h2>
-              <p id="victory-score-text" class="text-2xl text-white font-mono mb-10">Metrics: 0</p>
+            <div
+              id="victory-overlay"
+              class="hidden absolute inset-0 bg-black/95 z-30 flex flex-col items-center justify-center backdrop-blur-md"
+            >
+              <h2
+                class="text-7xl font-display font-black text-accent-cyan mb-2 tracking-widest drop-shadow-[0_0_20px_rgba(0,229,255,0.5)]"
+              >
+                TEST PASSED
+              </h2>
+              <p
+                id="victory-score-text"
+                class="text-2xl text-white font-mono mb-10"
+              >
+                Metrics: 0
+              </p>
               <div class="flex gap-4">
-                <button onclick="restartGame()" class="btn-game px-8 py-3 border border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors">CONTINUE SEQUENCE</button>
-                <button onclick="navigateTo('leaderboard-list')" class="btn-game px-8 py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]">VIEW RANKINGS</button>
+                <button
+                  onclick="restartGame()"
+                  class="btn-game px-8 py-3 border border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors"
+                >
+                  CONTINUE SEQUENCE
+                </button>
+                <button
+                  onclick="navigateTo('leaderboard-list')"
+                  class="btn-game px-8 py-3 bg-accent-purple/10 border border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white font-display font-bold text-lg tracking-widest rounded transition-colors shadow-[0_0_15px_rgba(177,91,250,0.3)]"
+                >
+                  VIEW RANKINGS
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="mobile-controls"
+              class="absolute inset-0 z-40 lg:hidden pointer-events-none"
+            >
+              <button
+                onclick="window.activateFullscreen()"
+                class="absolute top-4 right-4 w-10 h-10 bg-bg-surface/50 backdrop-blur-md border border-border-dim/50 rounded flex items-center justify-center text-text-muted hover:text-white active:bg-accent-cyan active:text-black pointer-events-auto shadow-[0_0_10px_rgba(0,229,255,0.1)] transition-all"
+              >
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                  />
+                </svg>
+              </button>
+
+              <div
+                class="absolute bottom-4 left-4 grid grid-cols-3 gap-1 pointer-events-auto opacity-70"
+              >
+                <div class="w-12 h-12"></div>
+                <button
+                  class="w-12 h-12 bg-bg-editor/80 border border-accent-cyan rounded-lg text-accent-cyan font-mono font-bold active:bg-accent-cyan active:text-black"
+                  onpointerdown="simulateKey('w', 'keydown')"
+                  onpointerup="simulateKey('w', 'keyup')"
+                  onpointerleave="simulateKey('w', 'keyup')"
+                >
+                  W
+                </button>
+                <div class="w-12 h-12"></div>
+                <button
+                  class="w-12 h-12 bg-bg-editor/80 border border-accent-cyan rounded-lg text-accent-cyan font-mono font-bold active:bg-accent-cyan active:text-black"
+                  onpointerdown="simulateKey('a', 'keydown')"
+                  onpointerup="simulateKey('a', 'keyup')"
+                  onpointerleave="simulateKey('a', 'keyup')"
+                >
+                  A
+                </button>
+                <button
+                  class="w-12 h-12 bg-bg-editor/80 border border-accent-cyan rounded-lg text-accent-cyan font-mono font-bold active:bg-accent-cyan active:text-black"
+                  onpointerdown="simulateKey('s', 'keydown')"
+                  onpointerup="simulateKey('s', 'keyup')"
+                  onpointerleave="simulateKey('s', 'keyup')"
+                >
+                  S
+                </button>
+                <button
+                  class="w-12 h-12 bg-bg-editor/80 border border-accent-cyan rounded-lg text-accent-cyan font-mono font-bold active:bg-accent-cyan active:text-black"
+                  onpointerdown="simulateKey('d', 'keydown')"
+                  onpointerup="simulateKey('d', 'keyup')"
+                  onpointerleave="simulateKey('d', 'keyup')"
+                >
+                  D
+                </button>
+              </div>
+
+              <div
+                class="absolute bottom-4 right-4 flex flex-col gap-2 items-center pointer-events-auto opacity-70"
+              >
+                <button
+                  class="w-14 h-10 bg-bg-editor/80 border border-accent-pink rounded-lg text-accent-pink font-mono font-bold text-[10px] active:bg-accent-pink active:text-black shadow-[0_0_10px_rgba(255,0,85,0.2)]"
+                  onpointerdown="simulateKey('r', 'keydown')"
+                  onpointerup="simulateKey('r', 'keyup')"
+                  onpointerleave="simulateKey('r', 'keyup')"
+                >
+                  SHIFT
+                </button>
+                <button
+                  class="w-16 h-16 bg-bg-editor/80 border border-white rounded-full text-white font-mono font-bold text-xs active:bg-white active:text-black shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                  onpointerdown="simulateKey(' ', 'keydown')"
+                  onpointerup="simulateKey(' ', 'keyup')"
+                  onpointerleave="simulateKey(' ', 'keyup')"
+                >
+                  JUMP
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="bg-bg-surface/80 backdrop-blur-xl border border-border-dim/50 rounded-xl p-4 flex items-center justify-between shadow-lg">
+          <div
+            class="bg-bg-surface/80 backdrop-blur-xl border border-border-dim/50 rounded-xl p-4 flex items-center justify-between shadow-lg"
+          >
             <div class="flex gap-3">
-              <button onclick="Module.resumeMainLoop()" class="btn-game px-4 py-2 bg-accent-cyan/10 border border-accent-cyan/50 hover:bg-accent-cyan hover:text-black text-accent-cyan rounded flex items-center gap-2 font-mono text-sm font-bold transition-colors">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg> PLAY
+              <button
+                onclick="Module.resumeMainLoop()"
+                class="btn-game px-4 py-2 bg-accent-cyan/10 border border-accent-cyan/50 hover:bg-accent-cyan hover:text-black text-accent-cyan rounded flex items-center gap-2 font-mono text-sm font-bold transition-colors"
+              >
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                PLAY
               </button>
-              <button onclick="Module.pauseMainLoop()" class="btn-game px-4 py-2 bg-bg-editor border border-border-dim text-text-muted hover:text-white rounded flex items-center gap-2 font-mono text-sm transition-colors">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> PAUSE
+              <button
+                onclick="Module.pauseMainLoop()"
+                class="btn-game px-4 py-2 bg-bg-editor border border-border-dim text-text-muted hover:text-white rounded flex items-center gap-2 font-mono text-sm transition-colors"
+              >
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                </svg>
+                PAUSE
               </button>
-              <button onclick="restartGame()" class="btn-game px-4 py-2 bg-bg-editor border border-border-dim text-text-muted hover:text-accent-pink rounded flex items-center gap-2 font-mono text-sm transition-colors">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg> RESTART
+              <button
+                onclick="restartGame()"
+                class="btn-game px-4 py-2 bg-bg-editor border border-border-dim text-text-muted hover:text-accent-pink rounded flex items-center gap-2 font-mono text-sm transition-colors"
+              >
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path
+                    d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+                  />
+                </svg>
+                RESTART
               </button>
             </div>
           </div>
@@ -246,50 +774,108 @@
       </main>
     </div>
 
-    <div id="view-leaderboard-list" class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20">
-      <header class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg">
+    <div
+      id="view-leaderboard-list"
+      class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20"
+    >
+      <header
+        class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg"
+      >
         <div class="flex items-center gap-6">
-          <button onclick="navigateTo('hub')" class="btn-game text-accent-purple border border-accent-purple/50 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest">&larr; SYS.EXIT</button>
+          <button
+            onclick="navigateTo('hub')"
+            class="btn-game text-accent-purple border border-accent-purple/50 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest"
+          >
+            &larr; SYS.EXIT
+          </button>
           <div class="w-px h-6 bg-border-dim"></div>
-          <h1 class="text-xl font-display font-black tracking-widest text-white">DATABASE <span class="text-accent-purple">INDEX</span></h1>
+          <h1
+            class="text-xl font-display font-black tracking-widest text-white"
+          >
+            DATABASE <span class="text-accent-purple">INDEX</span>
+          </h1>
         </div>
       </header>
 
-      <main class="flex-grow max-w-[1400px] mx-auto w-full p-6 flex flex-col gap-8 overflow-y-auto">
+      <main
+        class="flex-grow max-w-[1400px] mx-auto w-full p-6 flex flex-col gap-8 overflow-y-auto"
+      >
         <div class="mb-4">
-          <h2 class="text-3xl font-display font-bold text-white tracking-widest drop-shadow-[0_0_15px_rgba(177,91,250,0.3)] mb-2">SELECT CLOUD SIMULATION</h2>
-          <p class="text-text-muted font-mono">Fetch dynamic architectures globally hosted on the Firebase network.</p>
+          <h2
+            class="text-3xl font-display font-bold text-white tracking-widest drop-shadow-[0_0_15px_rgba(177,91,250,0.3)] mb-2"
+          >
+            SELECT CLOUD SIMULATION
+          </h2>
+          <p class="text-text-muted font-mono">
+            Fetch dynamic architectures globally hosted on the Firebase network.
+          </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           <p class="text-accent-cyan font-mono pl-4">Awaiting network connection...</p>
+          <p class="text-accent-cyan font-mono pl-4">
+            Awaiting network connection...
+          </p>
         </div>
       </main>
     </div>
 
-    <div id="view-leaderboard" class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20">
-      <header class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg">
+    <div
+      id="view-leaderboard"
+      class="hidden min-h-screen w-full flex flex-col bg-bg-base/40 backdrop-blur-md relative z-20"
+    >
+      <header
+        class="w-full px-6 py-4 flex items-center justify-between bg-bg-surface/80 border-b border-border-dim/50 shrink-0 z-20 shadow-lg"
+      >
         <div class="flex items-center gap-6">
-          <button onclick="navigateTo('leaderboard-list')" class="btn-game text-accent-purple border border-accent-purple/50 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest">&larr; BACK TO INDEX</button>
+          <button
+            onclick="navigateTo('leaderboard-list')"
+            class="btn-game text-accent-purple border border-accent-purple/50 hover:bg-accent-purple/10 px-4 py-1.5 rounded text-xs font-mono font-bold tracking-widest"
+          >
+            &larr; BACK TO INDEX
+          </button>
           <div class="w-px h-6 bg-border-dim"></div>
-          <h1 class="text-xl font-display font-black tracking-widest text-white">RANKINGS: <span id="leaderboard-game-title" class="text-accent-purple">GAME NAME</span></h1>
+          <h1
+            class="text-xl font-display font-black tracking-widest text-white"
+          >
+            RANKINGS:
+            <span id="leaderboard-game-title" class="text-accent-purple"
+              >GAME NAME</span
+            >
+          </h1>
         </div>
       </header>
-      <main class="flex-grow max-w-[1400px] mx-auto w-full p-6 flex flex-col gap-8 overflow-y-auto">
-        <div class="bg-bg-surface/70 backdrop-blur-xl rounded-xl border border-border-dim/50 overflow-hidden shadow-lg mb-8">
-          <div class="grid grid-cols-12 gap-4 p-4 bg-bg-editor/80 border-b border-border-dim text-xs font-mono font-bold text-text-muted uppercase tracking-widest">
+      <main
+        class="flex-grow max-w-[1400px] mx-auto w-full p-6 flex flex-col gap-8 overflow-y-auto"
+      >
+        <div
+          class="bg-bg-surface/70 backdrop-blur-xl rounded-xl border border-border-dim/50 overflow-hidden shadow-lg mb-8"
+        >
+          <div
+            class="grid grid-cols-12 gap-4 p-4 bg-bg-editor/80 border-b border-border-dim text-xs font-mono font-bold text-text-muted uppercase tracking-widest"
+          >
             <div class="col-span-2 text-center">Rank</div>
             <div class="col-span-6">Operative ID</div>
             <div class="col-span-4 text-right pr-4">Score Metric</div>
           </div>
-          <div id="leaderboard-data-rows" class="divide-y divide-border-dim/30 font-mono text-sm">
-             <div class="p-4 text-center text-text-muted">Awaiting data...</div>
+          <div
+            id="leaderboard-data-rows"
+            class="divide-y divide-border-dim/30 font-mono text-sm"
+          >
+            <div class="p-4 text-center text-text-muted">Awaiting data...</div>
           </div>
         </div>
       </main>
     </div>
 
-    <div id="shared-engine-container" class="hidden absolute w-full h-full flex flex-col z-10">
-      <canvas class="emscripten rounded-xl" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    <div
+      id="shared-engine-container"
+      class="hidden absolute w-full h-full flex flex-col z-10"
+    >
+      <canvas
+        class="emscripten rounded-xl"
+        id="canvas"
+        oncontextmenu="event.preventDefault()"
+        tabindex="-1"
+      ></canvas>
     </div>
 
     <script type="text/javascript">
@@ -298,132 +884,334 @@
         const canvas = document.getElementById("shader-bg");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        let w, h; let particles = [];
+        let w, h;
+        let particles = [];
         const particleCount = window.innerWidth < 768 ? 40 : 80;
         let mouse = { x: null, y: null, radius: 180 };
 
-        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-        window.addEventListener("resize", resize); resize();
-        document.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-        document.addEventListener("mouseleave", () => { mouse.x = null; mouse.y = null; });
+        function resize() {
+          w = canvas.width = window.innerWidth;
+          h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
+        document.addEventListener("mousemove", (e) => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+        });
+        document.addEventListener("mouseleave", () => {
+          mouse.x = null;
+          mouse.y = null;
+        });
 
         class Particle {
           constructor() {
-            this.x = Math.random() * w; this.y = Math.random() * h; this.size = Math.random() * 2 + 1;
-            this.baseX = this.x; this.baseY = this.y; this.density = Math.random() * 30 + 5;
+            this.x = Math.random() * w;
+            this.y = Math.random() * h;
+            this.size = Math.random() * 2 + 1;
+            this.baseX = this.x;
+            this.baseY = this.y;
+            this.density = Math.random() * 30 + 5;
             this.color = Math.random() > 0.4 ? "#00E5FF" : "#FF0055";
           }
-          draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.rect(this.x, this.y, this.size * 1.5, this.size * 1.5); ctx.closePath(); ctx.fill(); }
+          draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.rect(this.x, this.y, this.size * 1.5, this.size * 1.5);
+            ctx.closePath();
+            ctx.fill();
+          }
           update() {
-            this.x += (Math.random() - 0.5) * 0.8; this.y += (Math.random() - 0.5) * 0.8;
+            this.x += (Math.random() - 0.5) * 0.8;
+            this.y += (Math.random() - 0.5) * 0.8;
             if (mouse.x != null && mouse.y != null) {
-              let dx = mouse.x - this.x; let dy = mouse.y - this.y;
+              let dx = mouse.x - this.x;
+              let dy = mouse.y - this.y;
               let distance = Math.sqrt(dx * dx + dy * dy);
               let force = (mouse.radius - distance) / mouse.radius;
-              if (distance < mouse.radius) { this.x -= (dx / distance) * force * this.density; this.y -= (dy / distance) * force * this.density; } 
-              else {
-                if (this.x !== this.baseX) { this.x -= (this.x - this.baseX) / 15; }
-                if (this.y !== this.baseY) { this.y -= (this.y - this.baseY) / 15; }
+              if (distance < mouse.radius) {
+                this.x -= (dx / distance) * force * this.density;
+                this.y -= (dy / distance) * force * this.density;
+              } else {
+                if (this.x !== this.baseX) {
+                  this.x -= (this.x - this.baseX) / 15;
+                }
+                if (this.y !== this.baseY) {
+                  this.y -= (this.y - this.baseY) / 15;
+                }
               }
             }
             this.draw();
           }
         }
-        function init() { particles = []; for (let i = 0; i < particleCount; i++) { particles.push(new Particle()); } }
-        function animate() { ctx.clearRect(0, 0, w, h); for (let i = 0; i < particles.length; i++) { particles[i].update(); } connect(); neuralRafId = requestAnimationFrame(animate); }
+        function init() {
+          particles = [];
+          for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+          }
+        }
+        function animate() {
+          ctx.clearRect(0, 0, w, h);
+          for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+          }
+          connect();
+          neuralRafId = requestAnimationFrame(animate);
+        }
         function connect() {
           for (let a = 0; a < particles.length; a++) {
             for (let b = a; b < particles.length; b++) {
-              let distance = (particles[a].x - particles[b].x)**2 + (particles[a].y - particles[b].y)**2;
+              let distance =
+                (particles[a].x - particles[b].x) ** 2 +
+                (particles[a].y - particles[b].y) ** 2;
               if (distance < (w / 8) * (h / 8)) {
-                let opacityValue = 1 - distance / 12000; ctx.strokeStyle = `rgba(31, 41, 55, ${opacityValue * 0.4})`;
-                if (particles[a].color === particles[b].color) { ctx.strokeStyle = particles[a].color === "#00E5FF" ? `rgba(0, 229, 255, ${opacityValue * 0.5})` : `rgba(255, 0, 85, ${opacityValue * 0.5})`; }
-                ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(particles[a].x, particles[a].y); ctx.lineTo(particles[b].x, particles[b].y); ctx.stroke();
+                let opacityValue = 1 - distance / 12000;
+                ctx.strokeStyle = `rgba(31, 41, 55, ${opacityValue * 0.4})`;
+                if (particles[a].color === particles[b].color) {
+                  ctx.strokeStyle =
+                    particles[a].color === "#00E5FF"
+                      ? `rgba(0, 229, 255, ${opacityValue * 0.5})`
+                      : `rgba(255, 0, 85, ${opacityValue * 0.5})`;
+                }
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(particles[a].x, particles[a].y);
+                ctx.lineTo(particles[b].x, particles[b].y);
+                ctx.stroke();
               }
             }
           }
         }
-        init(); animate();
+        init();
+        animate();
       }
 
       async function runBootSequence() {
-        const bootText = document.getElementById("boot-percentage"); const bootCircle = document.getElementById("boot-circle");
-        const hintText = document.getElementById("boot-hint"); const bootLoader = document.getElementById("boot-loader");
+        const bootText = document.getElementById("boot-percentage");
+        const bootCircle = document.getElementById("boot-circle");
+        const hintText = document.getElementById("boot-hint");
+        const bootLoader = document.getElementById("boot-loader");
         document.body.style.overflow = "hidden";
-        
+
         for (let i = 0; i <= 100; i++) {
-          bootText.textContent = `${i}%`; bootCircle.style.strokeDashoffset = 283 - 283 * (i / 100);
+          bootText.textContent = `${i}%`;
+          bootCircle.style.strokeDashoffset = 283 - 283 * (i / 100);
           await new Promise((r) => setTimeout(r, 20));
         }
 
         hintText.style.opacity = "0";
-        setTimeout(() => { hintText.textContent = "SYSTEM READY."; hintText.classList.replace("text-text-main", "text-accent-cyan"); hintText.style.opacity = "1"; }, 200);
-
-        await new Promise((r) => setTimeout(r, 600)); bootLoader.style.opacity = "0";
         setTimeout(() => {
-          bootLoader.style.display = "none"; document.body.style.overflow = "auto"; initBackgroundShader();
-          const script = document.createElement("script"); script.src = "index.js"; script.async = true; document.body.appendChild(script);
+          hintText.textContent = "SYSTEM READY.";
+          hintText.classList.replace("text-text-main", "text-accent-cyan");
+          hintText.style.opacity = "1";
+        }, 200);
+
+        await new Promise((r) => setTimeout(r, 600));
+        bootLoader.style.opacity = "0";
+        setTimeout(() => {
+          bootLoader.style.display = "none";
+          document.body.style.overflow = "auto";
+          initBackgroundShader();
+          const script = document.createElement("script");
+          script.src = "index.js";
+          script.async = true;
+          document.body.appendChild(script);
         }, 700);
       }
 
-      if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", runBootSequence); } else { runBootSequence(); }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runBootSequence);
+      } else {
+        runBootSequence();
+      }
 
       document.querySelectorAll(".tilt-card").forEach((card) => {
         card.addEventListener("mousemove", (e) => {
-          const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left; const y = e.clientY - rect.top;
-          card.style.transform = `rotateX(${((y - rect.height/2) / (rect.height/2)) * -12}deg) rotateY(${((x - rect.width/2) / (rect.width/2)) * 12}deg) scale3d(1.02, 1.02, 1.02)`;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.transform = `rotateX(${((y - rect.height / 2) / (rect.height / 2)) * -12}deg) rotateY(${((x - rect.width / 2) / (rect.width / 2)) * 12}deg) scale3d(1.02, 1.02, 1.02)`;
         });
-        card.addEventListener("mouseleave", () => { card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`; });
+        card.addEventListener("mouseleave", () => {
+          card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        });
       });
 
       const originalConsoleError = console.error;
-      console.error = function (...args) { if (typeof args[0] === "string" && args[0].includes("emscripten_set_main_loop_timing")) return; originalConsoleError.apply(console, args); };
+      console.error = function (...args) {
+        if (
+          typeof args[0] === "string" &&
+          args[0].includes("emscripten_set_main_loop_timing")
+        )
+          return;
+        originalConsoleError.apply(console, args);
+      };
 
       var canvasElement = document.getElementById("canvas");
-      var Module = { canvas: canvasElement, keyboardListeningElement: canvasElement };
+      var Module = {
+        canvas: canvasElement,
+        keyboardListeningElement: canvasElement,
+      };
 
-      let GROQ_API_KEY = localStorage.getItem("groq_api_key") || ""; 
+      let GROQ_API_KEY = localStorage.getItem("groq_api_key") || "";
       let pendingGeneratedJson = "";
 
       ["keydown", "keyup", "keypress"].forEach((eventType) => {
-        window.addEventListener(eventType, (e) => {
-          const el = document.activeElement;
-          if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
-            e.stopPropagation(); 
-            if (eventType === "keydown" && e.key === "Enter" && el.id === "ai-prompt" && !e.shiftKey) { 
-                e.preventDefault(); generateGameFromAI(); 
+        window.addEventListener(
+          eventType,
+          (e) => {
+            const el = document.activeElement;
+            if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+              e.stopPropagation();
+              if (
+                eventType === "keydown" &&
+                e.key === "Enter" &&
+                el.id === "ai-prompt" &&
+                !e.shiftKey
+              ) {
+                e.preventDefault();
+                generateGameFromAI();
+              }
             }
-          }
-        }, true);
+          },
+          true,
+        );
       });
 
-      document.addEventListener("keydown", (e) => { if (document.activeElement && document.activeElement.id === "canvas") { if (e.key === "Backspace" || e.key === "Tab" || e.key === " ") e.preventDefault(); } });
+      document.addEventListener("keydown", (e) => {
+        if (document.activeElement && document.activeElement.id === "canvas") {
+          if (e.key === "Backspace" || e.key === "Tab" || e.key === " ")
+            e.preventDefault();
+        }
+      });
 
       function restartGame() {
-        document.getElementById("game-over-overlay").classList.add("hidden"); document.getElementById("victory-overlay").classList.add("hidden");
-        if (pendingGeneratedJson) { Module.ccall("LoadDynamicConfig", "void", ["string"], [pendingGeneratedJson]); }
-        Module.resumeMainLoop(); setTimeout(() => document.getElementById("canvas").focus(), 100);
+        document.getElementById("game-over-overlay").classList.add("hidden");
+        document.getElementById("victory-overlay").classList.add("hidden");
+        if (pendingGeneratedJson) {
+          Module.ccall(
+            "LoadDynamicConfig",
+            "void",
+            ["string"],
+            [pendingGeneratedJson],
+          );
+        }
+        Module.resumeMainLoop();
+        setTimeout(() => document.getElementById("canvas").focus(), 100);
       }
 
-      function navigateTo(viewName) {
-        ["hub", "creator", "player", "leaderboard-list", "leaderboard"].forEach((view) => {
-            const el = document.getElementById("view-" + view); if (el) el.classList.add("hidden");
+      function simulateKey(keyChar, eventType) {
+        // Determine the correct key codes based on the character
+        let keyCodeStr =
+          keyChar === " " ? "Space" : "Key" + keyChar.toUpperCase();
+        let numericCode =
+          keyChar === " " ? 32 : keyChar.toUpperCase().charCodeAt(0);
+
+        // Create a fake keyboard event
+        const event = new KeyboardEvent(eventType, {
+          key: keyChar,
+          code: keyCodeStr,
+          keyCode: numericCode,
+          which: numericCode,
+          bubbles: true,
+          cancelable: true,
         });
+
+        // Dispatch it directly to the Emscripten canvas
+        const canvas = document.getElementById("canvas");
+        if (canvas) {
+          canvas.dispatchEvent(event);
+        }
+      }
+
+      // --- FULLSCREEN & ORIENTATION HANDLER ---
+      window.activateFullscreen = async function () {
+        // Target the entire slot so mobile controls stay visible!
+        const container = document.getElementById("player-canvas-slot");
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          try {
+            // 1. Enter Fullscreen first
+            if (container.requestFullscreen) {
+              await container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+              /* Safari Mobile */
+              await container.webkitRequestFullscreen();
+            }
+
+            // 2. Once in fullscreen, forcefully lock the phone to landscape
+            if (screen.orientation && screen.orientation.lock) {
+              await screen.orientation.lock("landscape");
+            }
+          } catch (err) {
+            console.warn("Could not lock orientation: ", err);
+          }
+        } else {
+          try {
+            // 1. Exit Fullscreen
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              /* Safari Mobile */
+              await document.webkitExitFullscreen();
+            }
+
+            // 2. Unlock orientation so they can hold their phone normally again
+            if (screen.orientation && screen.orientation.unlock) {
+              screen.orientation.unlock();
+            }
+          } catch (err) {
+            console.warn("Could not unlock orientation: ", err);
+          }
+        }
+      };
+
+      // Prevent mobile screens from scrolling when tapping the canvas or buttons
+      document.addEventListener(
+        "touchmove",
+        function (e) {
+          if (e.target.closest("#player-canvas-slot")) {
+            e.preventDefault();
+          }
+        },
+        { passive: false },
+      );
+
+      function navigateTo(viewName) {
+        ["hub", "creator", "player", "leaderboard-list", "leaderboard"].forEach(
+          (view) => {
+            const el = document.getElementById("view-" + view);
+            if (el) el.classList.add("hidden");
+          },
+        );
         document.getElementById("view-" + viewName).classList.remove("hidden");
-        
-        const engineContainer = document.getElementById("shared-engine-container");
+
+        const engineContainer = document.getElementById(
+          "shared-engine-container",
+        );
         if (viewName === "player") {
           engineContainer.classList.remove("hidden", "absolute");
-          document.getElementById("player-canvas-slot").appendChild(engineContainer);
+          document
+            .getElementById("player-canvas-slot")
+            .appendChild(engineContainer);
           setTimeout(() => document.getElementById("canvas").focus(), 100);
-          if (typeof WEBAudio !== "undefined" && WEBAudio.audioContext.state === "suspended") { WEBAudio.audioContext.resume(); }
-          
-          try { Module.ccall("SetAudioState", "void", ["number"], [1]); } catch(e){}
+          if (
+            typeof WEBAudio !== "undefined" &&
+            WEBAudio.audioContext.state === "suspended"
+          ) {
+            WEBAudio.audioContext.resume();
+          }
+
+          try {
+            Module.ccall("SetAudioState", "void", ["number"], [1]);
+          } catch (e) {}
         } else {
-          engineContainer.classList.add("hidden", "absolute"); 
+          engineContainer.classList.add("hidden", "absolute");
           document.body.appendChild(engineContainer);
-          
-          try { Module.ccall("SetAudioState", "void", ["number"], [0]); } catch(e){}
+
+          try {
+            Module.ccall("SetAudioState", "void", ["number"], [0]);
+          } catch (e) {}
         }
       }
 
@@ -446,71 +1234,146 @@
         11. precision_jump: {"game_mode": "precision_jump", "levels": [{"scroll_speed": 6.0, "obstacles": [{"x": 800, "w": 40, "h": 40}, {"x": 1200, "w": 30, "h": 60}]}]}`;
 
       async function generateGameFromAI() {
-        const promptBox = document.getElementById("ai-prompt"); const chatFeed = document.getElementById("chat-feed");
-        const overlay = document.getElementById("ai-loading-overlay"); const codeBlock = document.getElementById("json-code-block");
+        const promptBox = document.getElementById("ai-prompt");
+        const chatFeed = document.getElementById("chat-feed");
+        const overlay = document.getElementById("ai-loading-overlay");
+        const codeBlock = document.getElementById("json-code-block");
         const btn = document.getElementById("generate-btn");
 
         if (!promptBox.value.trim()) return;
 
         if (!GROQ_API_KEY) {
-          const userKey = prompt("Please enter your Groq API Key to enable AI generation.");
+          const userKey = prompt(
+            "Please enter your Groq API Key to enable AI generation.",
+          );
           if (userKey && userKey.trim() !== "") {
-            GROQ_API_KEY = userKey.trim(); localStorage.setItem("groq_api_key", GROQ_API_KEY);
-            chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-cyan mr-2">SYS></span><span class="text-text-muted">API Key cached.</span></div>`);
+            GROQ_API_KEY = userKey.trim();
+            localStorage.setItem("groq_api_key", GROQ_API_KEY);
+            chatFeed.insertAdjacentHTML(
+              "beforeend",
+              `<div class="mb-2"><span class="text-accent-cyan mr-2">SYS></span><span class="text-text-muted">API Key cached.</span></div>`,
+            );
           } else return;
         }
 
-        chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-pink mr-2">USR></span><span class="text-text-main">${promptBox.value}</span></div>`);
-        const rawUserInput = promptBox.value; promptBox.value = "";
-        overlay.classList.remove("hidden"); codeBlock.style.opacity = "0.3"; btn.disabled = true;
+        chatFeed.insertAdjacentHTML(
+          "beforeend",
+          `<div class="mb-2"><span class="text-accent-pink mr-2">USR></span><span class="text-text-main">${promptBox.value}</span></div>`,
+        );
+        const rawUserInput = promptBox.value;
+        promptBox.value = "";
+        overlay.classList.remove("hidden");
+        codeBlock.style.opacity = "0.3";
+        btn.disabled = true;
 
         try {
-          const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
-            method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_API_KEY}` },
-            body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: rawUserInput }], response_format: { type: "json_object" } }),
-          });
+          const response = await fetch(
+            `https://api.groq.com/openai/v1/chat/completions`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${GROQ_API_KEY}`,
+              },
+              body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                  { role: "system", content: SYSTEM_PROMPT },
+                  { role: "user", content: rawUserInput },
+                ],
+                response_format: { type: "json_object" },
+              }),
+            },
+          );
 
           if (!response.ok) throw new Error(`API Rejected: ${response.status}`);
 
           const data = await response.json();
-          let rawJsonString = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+          let rawJsonString = data.choices[0].message.content
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
           const parsedJson = JSON.parse(rawJsonString);
 
           if (parsedJson.chat_response) {
-            chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-cyan mr-2">SYS></span><span class="text-text-muted">${parsedJson.chat_response}</span></div>`);
+            chatFeed.insertAdjacentHTML(
+              "beforeend",
+              `<div class="mb-2"><span class="text-accent-cyan mr-2">SYS></span><span class="text-text-muted">${parsedJson.chat_response}</span></div>`,
+            );
           } else {
             pendingGeneratedJson = rawJsonString;
-            let highlightedJson = JSON.stringify(parsedJson, null, 4).replace(/"(.*?)":/g, '<span class="text-[#00E5FF]">"$1"</span>:').replace(/: "(.*?)"/g, ': <span class="text-[#FF0055]">"$1"</span>').replace(/: (\d+)/g, ': <span class="text-[#B100FF]">$1</span>');
-            codeBlock.innerHTML = highlightedJson; chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-cyan mr-2">OK></span><span class="text-text-muted">Payload generated.</span></div>`);
+            let highlightedJson = JSON.stringify(parsedJson, null, 4)
+              .replace(/"(.*?)":/g, '<span class="text-[#00E5FF]">"$1"</span>:')
+              .replace(
+                /: "(.*?)"/g,
+                ': <span class="text-[#FF0055]">"$1"</span>',
+              )
+              .replace(/: (\d+)/g, ': <span class="text-[#B100FF]">$1</span>');
+            codeBlock.innerHTML = highlightedJson;
+            chatFeed.insertAdjacentHTML(
+              "beforeend",
+              `<div class="mb-2"><span class="text-accent-cyan mr-2">OK></span><span class="text-text-muted">Payload generated.</span></div>`,
+            );
           }
         } catch (error) {
-          chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-pink mr-2">ERR></span><span class="text-text-muted">${error.message}</span></div>`);
+          chatFeed.insertAdjacentHTML(
+            "beforeend",
+            `<div class="mb-2"><span class="text-accent-pink mr-2">ERR></span><span class="text-text-muted">${error.message}</span></div>`,
+          );
         } finally {
-          overlay.classList.add("hidden"); codeBlock.style.opacity = "1"; btn.disabled = false; chatFeed.scrollTop = chatFeed.scrollHeight;
+          overlay.classList.add("hidden");
+          codeBlock.style.opacity = "1";
+          btn.disabled = false;
+          chatFeed.scrollTop = chatFeed.scrollHeight;
         }
       }
 
       function deployApprovedJson() {
         if (!pendingGeneratedJson) {
-            alert("No payload found. Generate or select a simulation first.");
-            return; 
-        }
-        
-        const emailBtn = document.getElementById("auth-email-btn");
-        if (!emailBtn.classList.contains("hidden")) {
-            window.showEmailAuth();
-            return; 
+          alert("No payload found. Generate or select a simulation first.");
+          return;
         }
 
-        navigateTo("player"); 
-        Module.ccall("LoadDynamicConfig", "void", ["string"], [pendingGeneratedJson]);
+        const emailBtn = document.getElementById("auth-email-btn");
+        if (!emailBtn.classList.contains("hidden")) {
+          window.showEmailAuth();
+          return;
+        }
+
+        navigateTo("player");
+        Module.ccall(
+          "LoadDynamicConfig",
+          "void",
+          ["string"],
+          [pendingGeneratedJson],
+        );
       }
     </script>
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-      import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-      import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        onSnapshot,
+        query,
+        orderBy,
+        limit,
+        serverTimestamp,
+        where,
+        doc,
+        deleteDoc,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+      import {
+        getAuth,
+        signOut,
+        onAuthStateChanged,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        updateProfile,
+      } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyCUt5Yj5fUO03y90n_CiZ1OPf720zrhPJ8",
@@ -519,8 +1382,8 @@
         storageBucket: "spectrum-ee503.firebasestorage.app",
         messagingSenderId: "210455628005",
         appId: "1:210455628005:web:7225ae630a8aa19a53ac0c",
-        measurementId: "G-GRHMX0XHB7"
-};
+        measurementId: "G-GRHMX0XHB7",
+      };
 
       const app = initializeApp(firebaseConfig);
       // FIXED DB CONNECTION ROUTING HERE
@@ -538,155 +1401,218 @@
         const logoutBtn = document.getElementById("auth-logout-btn");
 
         if (user) {
-            const displayName = user.displayName ? user.displayName.split(" ")[0].toUpperCase() : "GUEST";
-            nameLabel.innerText = "OP_ID: " + displayName;
-            nameLabel.classList.remove("hidden");
-            guestBtn.classList.add("hidden"); 
-            emailBtn.classList.add("hidden");
-            logoutBtn.classList.remove("hidden");
+          const displayName = user.displayName
+            ? user.displayName.split(" ")[0].toUpperCase()
+            : "GUEST";
+          nameLabel.innerText = "OP_ID: " + displayName;
+          nameLabel.classList.remove("hidden");
+          guestBtn.classList.add("hidden");
+          emailBtn.classList.add("hidden");
+          logoutBtn.classList.remove("hidden");
         } else {
-            nameLabel.classList.add("hidden");
-            guestBtn.classList.remove("hidden"); 
-            emailBtn.classList.remove("hidden");
-            logoutBtn.classList.add("hidden");
+          nameLabel.classList.add("hidden");
+          guestBtn.classList.remove("hidden");
+          emailBtn.classList.remove("hidden");
+          logoutBtn.classList.add("hidden");
         }
-        
-        if(document.getElementById("view-leaderboard-list").classList.contains("hidden") === false) {
-            window.fetchCloudGamesList();
+
+        if (
+          document
+            .getElementById("view-leaderboard-list")
+            .classList.contains("hidden") === false
+        ) {
+          window.fetchCloudGamesList();
         }
       });
 
-      window.showEmailAuth = () => { 
-          document.getElementById("guest-auth-modal").classList.add("hidden");
-          document.getElementById("email-auth-modal").classList.remove("hidden"); 
+      window.showEmailAuth = () => {
+        document.getElementById("guest-auth-modal").classList.add("hidden");
+        document.getElementById("email-auth-modal").classList.remove("hidden");
       };
-      
-      window.closeEmailAuth = () => { 
-          document.getElementById("email-auth-modal").classList.add("hidden"); 
-          document.getElementById("password-input").value = ""; 
+
+      window.closeEmailAuth = () => {
+        document.getElementById("email-auth-modal").classList.add("hidden");
+        document.getElementById("password-input").value = "";
       };
 
       window.signUpWithEmail = async () => {
-          const email = document.getElementById("email-input").value.trim();
-          const password = document.getElementById("password-input").value;
-          const name = document.getElementById("email-name-input").value.trim() || "Operative_" + Math.floor(Math.random()*1000);
-          if(!email || !password) { alert("Email and Password are required."); return; }
-          
-          try {
-              const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-              await updateProfile(userCredential.user, { displayName: name });
-              document.getElementById("auth-user-name").innerText = "OP_ID: " + name.toUpperCase();
-              window.closeEmailAuth();
-          } catch (error) { console.error("Signup Error", error); alert("Signup failed: " + error.message); }
+        const email = document.getElementById("email-input").value.trim();
+        const password = document.getElementById("password-input").value;
+        const name =
+          document.getElementById("email-name-input").value.trim() ||
+          "Operative_" + Math.floor(Math.random() * 1000);
+        if (!email || !password) {
+          alert("Email and Password are required.");
+          return;
+        }
+
+        try {
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password,
+          );
+          await updateProfile(userCredential.user, { displayName: name });
+          document.getElementById("auth-user-name").innerText =
+            "OP_ID: " + name.toUpperCase();
+          window.closeEmailAuth();
+        } catch (error) {
+          console.error("Signup Error", error);
+          alert("Signup failed: " + error.message);
+        }
       };
 
       window.loginWithEmail = async () => {
-          const email = document.getElementById("email-input").value.trim();
-          const password = document.getElementById("password-input").value;
-          if(!email || !password) { alert("Email and Password are required."); return; }
-          
-          try {
-              await signInWithEmailAndPassword(auth, email, password);
-              window.closeEmailAuth();
-          } catch (error) { console.error("Login Error", error); alert("Login failed: " + error.message); }
+        const email = document.getElementById("email-input").value.trim();
+        const password = document.getElementById("password-input").value;
+        if (!email || !password) {
+          alert("Email and Password are required.");
+          return;
+        }
+
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          window.closeEmailAuth();
+        } catch (error) {
+          console.error("Login Error", error);
+          alert("Login failed: " + error.message);
+        }
       };
 
-      window.signInGuest = () => { 
-          document.getElementById("email-auth-modal").classList.add("hidden");
-          document.getElementById("guest-auth-modal").classList.remove("hidden"); 
+      window.signInGuest = () => {
+        document.getElementById("email-auth-modal").classList.add("hidden");
+        document.getElementById("guest-auth-modal").classList.remove("hidden");
       };
-      
-      window.closeGuestAuth = () => { 
-          document.getElementById("guest-auth-modal").classList.add("hidden"); 
-          document.getElementById("guest-password-input").value = ""; 
+
+      window.closeGuestAuth = () => {
+        document.getElementById("guest-auth-modal").classList.add("hidden");
+        document.getElementById("guest-password-input").value = "";
       };
 
       window.processGuestAuth = async () => {
-          let rawId = document.getElementById("guest-id-input").value.trim().replace(/\s+/g, '');
-          const password = document.getElementById("guest-password-input").value;
-          
-          if (!rawId || password.length < 6) { 
-              alert("Invalid parameters. ID is required and passcode must be at least 6 characters."); 
-              return false; 
-          }
-          
-          const syntheticEmail = `${rawId.toLowerCase()}@guest.spectrum.local`;
-          
+        let rawId = document
+          .getElementById("guest-id-input")
+          .value.trim()
+          .replace(/\s+/g, "");
+        const password = document.getElementById("guest-password-input").value;
+
+        if (!rawId || password.length < 6) {
+          alert(
+            "Invalid parameters. ID is required and passcode must be at least 6 characters.",
+          );
+          return false;
+        }
+
+        const syntheticEmail = `${rawId.toLowerCase()}@guest.spectrum.local`;
+
+        try {
+          await signInWithEmailAndPassword(auth, syntheticEmail, password);
+          window.closeGuestAuth();
+          return true;
+        } catch (loginError) {
           try {
-              await signInWithEmailAndPassword(auth, syntheticEmail, password);
-              window.closeGuestAuth();
-              return true;
-          } catch (loginError) {
-              try {
-                  const userCredential = await createUserWithEmailAndPassword(auth, syntheticEmail, password);
-                  await updateProfile(userCredential.user, { displayName: rawId });
-                  document.getElementById("auth-user-name").innerText = "OP_ID: " + rawId.toUpperCase();
-                  window.closeGuestAuth();
-                  return true;
-              } catch (signupError) {
-                  if (signupError.code === 'auth/email-already-in-use') {
-                      alert("ACCESS DENIED: That Operative ID is already registered. Incorrect Passcode.");
-                  } else { alert("System failure: " + signupError.message); }
-                  return false;
-              }
+            const userCredential = await createUserWithEmailAndPassword(
+              auth,
+              syntheticEmail,
+              password,
+            );
+            await updateProfile(userCredential.user, { displayName: rawId });
+            document.getElementById("auth-user-name").innerText =
+              "OP_ID: " + rawId.toUpperCase();
+            window.closeGuestAuth();
+            return true;
+          } catch (signupError) {
+            if (signupError.code === "auth/email-already-in-use") {
+              alert(
+                "ACCESS DENIED: That Operative ID is already registered. Incorrect Passcode.",
+              );
+            } else {
+              alert("System failure: " + signupError.message);
+            }
+            return false;
           }
+        }
       };
 
       window.signOutUser = async () => {
-          try { await signOut(auth); } 
-          catch (error) { console.error("Logout Failed", error); }
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error("Logout Failed", error);
+        }
       };
 
-      window.saveCurrentGame = async function() {
+      window.saveCurrentGame = async function () {
         if (!currentUser) {
-            alert("You must login or access as a guest to publish to the global cloud.");
-            return;
+          alert(
+            "You must login or access as a guest to publish to the global cloud.",
+          );
+          return;
         }
 
-        const gameNameInput = document.getElementById('game-name-input');
+        const gameNameInput = document.getElementById("game-name-input");
         const gameName = gameNameInput.value.trim();
-        if (!gameName) { alert("Please enter a Simulation Name first."); gameNameInput.focus(); return; }
-        if (!pendingGeneratedJson) { alert("Generate a payload first."); return; }
+        if (!gameName) {
+          alert("Please enter a Simulation Name first.");
+          gameNameInput.focus();
+          return;
+        }
+        if (!pendingGeneratedJson) {
+          alert("Generate a payload first.");
+          return;
+        }
 
         try {
-          await addDoc(collection(db, "games"), { 
-              gameName: gameName, 
-              payload: pendingGeneratedJson, 
-              createdAt: serverTimestamp(),
-              ownerId: currentUser.uid,          
-              creatorName: currentUser.displayName
+          await addDoc(collection(db, "games"), {
+            gameName: gameName,
+            payload: pendingGeneratedJson,
+            createdAt: serverTimestamp(),
+            ownerId: currentUser.uid,
+            creatorName: currentUser.displayName,
           });
           const chatFeed = document.getElementById("chat-feed");
-          chatFeed.insertAdjacentHTML("beforeend", `<div class="mb-2"><span class="text-accent-purple mr-2">NET></span><span class="text-text-main">Published: ${gameName}</span></div>`);
+          chatFeed.insertAdjacentHTML(
+            "beforeend",
+            `<div class="mb-2"><span class="text-accent-purple mr-2">NET></span><span class="text-text-main">Published: ${gameName}</span></div>`,
+          );
           chatFeed.scrollTop = chatFeed.scrollHeight;
-          
+
           gameNameInput.value = "";
-        } catch (e) { console.error("Error adding document: ", e); }
+        } catch (e) {
+          console.error("Error adding document: ", e);
+        }
       };
 
-      window.fetchCloudGamesList = async function() {
-        const listContainer = document.querySelector("#view-leaderboard-list .grid"); 
-        if(!listContainer) return;
-        listContainer.innerHTML = '<p class="text-accent-cyan font-mono pl-4">Querying mainframe...</p>';
-        
+      window.fetchCloudGamesList = async function () {
+        const listContainer = document.querySelector(
+          "#view-leaderboard-list .grid",
+        );
+        if (!listContainer) return;
+        listContainer.innerHTML =
+          '<p class="text-accent-cyan font-mono pl-4">Querying mainframe...</p>';
+
         try {
-          const q = query(collection(db, "games"), orderBy("createdAt", "desc"), limit(12));
+          const q = query(
+            collection(db, "games"),
+            orderBy("createdAt", "desc"),
+            limit(12),
+          );
           const querySnapshot = await getDocs(q);
-          listContainer.innerHTML = ''; 
-          
+          listContainer.innerHTML = "";
+
           querySnapshot.forEach((docItem) => {
             const data = docItem.data();
-            const encodedPayload = encodeURIComponent(data.payload); 
-            
+            const encodedPayload = encodeURIComponent(data.payload);
+
             let deleteBtnHtml = "";
             if (currentUser && currentUser.uid === data.ownerId) {
-                deleteBtnHtml = `<button onclick="event.stopPropagation(); window.deleteCloudGame('${docItem.id}')" class="mt-2 text-xs font-mono text-accent-pink border border-accent-pink/30 rounded px-3 py-1 hover:bg-accent-pink/10 w-fit uppercase tracking-widest">[ DELETE ]</button>`;
+              deleteBtnHtml = `<button onclick="event.stopPropagation(); window.deleteCloudGame('${docItem.id}')" class="mt-2 text-xs font-mono text-accent-pink border border-accent-pink/30 rounded px-3 py-1 hover:bg-accent-pink/10 w-fit uppercase tracking-widest">[ DELETE ]</button>`;
             }
 
             const card = `
               <div onclick="window.loadCloudGame('${docItem.id}', decodeURIComponent('${encodedPayload}'))" class="btn-game bg-bg-surface/70 border border-border-dim hover:border-accent-cyan rounded-xl p-6 cursor-pointer flex flex-col gap-4">
                 <h3 class="text-xl font-display font-bold text-white mb-1">${data.gameName}</h3>
-                <p class="text-xs font-mono text-text-muted">Creator: ${data.creatorName || 'Anonymous'}</p>
+                <p class="text-xs font-mono text-text-muted">Creator: ${data.creatorName || "Anonymous"}</p>
                 <div class="flex gap-2">
                     <button onclick="event.stopPropagation(); window.openLeaderboard('${docItem.id}', '${data.gameName}')" class="mt-2 text-xs font-mono text-accent-purple border border-accent-purple/30 rounded px-3 py-1 hover:bg-accent-purple/10 w-fit">View Rankings</button>
                     ${deleteBtnHtml}
@@ -695,57 +1621,87 @@
             `;
             listContainer.innerHTML += card;
           });
-        } catch (e) { console.error("Error fetching games: ", e); }
+        } catch (e) {
+          console.error("Error fetching games: ", e);
+        }
       };
 
-      window.deleteCloudGame = async function(docId) {
-          if(!confirm("Initiate purge sequence? This cannot be undone.")) return;
-          try {
-              await deleteDoc(doc(db, "games", docId));
-              window.fetchCloudGamesList(); 
-          } catch (e) { console.error("Purge failed: ", e); alert("Permission denied or network error.");}
+      window.deleteCloudGame = async function (docId) {
+        if (!confirm("Initiate purge sequence? This cannot be undone.")) return;
+        try {
+          await deleteDoc(doc(db, "games", docId));
+          window.fetchCloudGamesList();
+        } catch (e) {
+          console.error("Purge failed: ", e);
+          alert("Permission denied or network error.");
+        }
       };
 
-      window.loadCloudGame = function(gameId, payloadString) {
-          window.activeCloudGameId = gameId; pendingGeneratedJson = payloadString; deployApprovedJson();
+      window.loadCloudGame = function (gameId, payloadString) {
+        window.activeCloudGameId = gameId;
+        pendingGeneratedJson = payloadString;
+        deployApprovedJson();
       };
 
-      window.submitScoreToCloud = async function(finalScore) {
-          if (!window.activeCloudGameId) return; 
-          const playerName = currentUser ? currentUser.displayName : "Unknown_Operative";
-          try {
-              await addDoc(collection(db, "leaderboards"), { gameId: window.activeCloudGameId, playerName: playerName, score: finalScore, timestamp: serverTimestamp() });
-          } catch (e) { console.error("Error securing score: ", e); }
+      window.submitScoreToCloud = async function (finalScore) {
+        if (!window.activeCloudGameId) return;
+        const playerName = currentUser
+          ? currentUser.displayName
+          : "Unknown_Operative";
+        try {
+          await addDoc(collection(db, "leaderboards"), {
+            gameId: window.activeCloudGameId,
+            playerName: playerName,
+            score: finalScore,
+            timestamp: serverTimestamp(),
+          });
+        } catch (e) {
+          console.error("Error securing score: ", e);
+        }
       };
 
-      window.openLeaderboard = async function(gameId, gameName) {
-          document.getElementById("leaderboard-game-title").innerText = gameName.toUpperCase();
-          navigateTo('leaderboard'); 
-          const boardContainer = document.getElementById("leaderboard-data-rows"); 
-          if(!boardContainer) return;
-          
-          boardContainer.innerHTML = '<div class="p-4 text-center font-mono text-accent-cyan animate-pulse">Establishing live uplink...</div>';
-          
-          try {
-              const q = query(collection(db, "leaderboards"), where("gameId", "==", gameId), orderBy("score", "desc"), limit(10));
-              onSnapshot(q, (querySnapshot) => {
-                  boardContainer.innerHTML = ''; let rank = 1;
-                  querySnapshot.forEach((doc) => {
-                      const data = doc.data();
-                      boardContainer.innerHTML += `
+      window.openLeaderboard = async function (gameId, gameName) {
+        document.getElementById("leaderboard-game-title").innerText =
+          gameName.toUpperCase();
+        navigateTo("leaderboard");
+        const boardContainer = document.getElementById("leaderboard-data-rows");
+        if (!boardContainer) return;
+
+        boardContainer.innerHTML =
+          '<div class="p-4 text-center font-mono text-accent-cyan animate-pulse">Establishing live uplink...</div>';
+
+        try {
+          const q = query(
+            collection(db, "leaderboards"),
+            where("gameId", "==", gameId),
+            orderBy("score", "desc"),
+            limit(10),
+          );
+          onSnapshot(q, (querySnapshot) => {
+            boardContainer.innerHTML = "";
+            let rank = 1;
+            querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              boardContainer.innerHTML += `
                         <div class="grid grid-cols-12 gap-4 p-4 items-center hover:bg-white/5 transition-colors font-mono text-sm">
                           <div class="col-span-2 text-center font-display font-bold text-text-muted">${rank}</div>
                           <div class="col-span-6 text-white font-bold">${data.playerName}</div>
                           <div class="col-span-4 text-right pr-4 text-accent-cyan tracking-widest">${data.score}</div>
                         </div>`;
-                      rank++;
-                  });
-                  if(rank === 1) boardContainer.innerHTML = '<div class="p-4 text-center font-mono text-text-muted">No data found for this protocol.</div>';
-              });
-          } catch (e) { console.error("Error loading leaderboard: ", e); }
+              rank++;
+            });
+            if (rank === 1)
+              boardContainer.innerHTML =
+                '<div class="p-4 text-center font-mono text-text-muted">No data found for this protocol.</div>';
+          });
+        } catch (e) {
+          console.error("Error loading leaderboard: ", e);
+        }
       };
 
-      document.addEventListener("DOMContentLoaded", () => { setTimeout(window.fetchCloudGamesList, 1500); });
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(window.fetchCloudGamesList, 1500);
+      });
     </script>
   </body>
 </html>
