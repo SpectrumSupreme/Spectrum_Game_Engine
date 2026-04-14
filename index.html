@@ -1053,7 +1053,7 @@
         keyboardListeningElement: canvasElement,
       };
 
-      let GROQ_API_KEY = localStorage.getItem("groq_api_key") || "";
+      let GROQ_API_KEY = "gsk_xai-56WodoYFEpmotq8W9EJ9Z9HgH8zu1eNYXshSgAnK8ozFoQaPCzrfVTa1sM3o5FQeovPjawUL4uBraB2r";
       let pendingGeneratedJson = "";
 
       ["keydown", "keyup", "keypress"].forEach((eventType) => {
@@ -1241,20 +1241,6 @@
         const btn = document.getElementById("generate-btn");
 
         if (!promptBox.value.trim()) return;
-
-        if (!GROQ_API_KEY) {
-          const userKey = prompt(
-            "Please enter your Groq API Key to enable AI generation.",
-          );
-          if (userKey && userKey.trim() !== "") {
-            GROQ_API_KEY = userKey.trim();
-            localStorage.setItem("groq_api_key", GROQ_API_KEY);
-            chatFeed.insertAdjacentHTML(
-              "beforeend",
-              `<div class="mb-2"><span class="text-accent-cyan mr-2">SYS></span><span class="text-text-muted">API Key cached.</span></div>`,
-            );
-          } else return;
-        }
 
         chatFeed.insertAdjacentHTML(
           "beforeend",
